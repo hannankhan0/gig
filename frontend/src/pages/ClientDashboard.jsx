@@ -8,6 +8,7 @@ import { signOut } from 'firebase/auth';
 import PostGigModal from '../components/PostGigModal';
 import ApplicationsModal from '../components/ApplicationsModal';
 import GigWorkModal from '../components/GigWorkModal';
+import TokenBalanceCard from '../components/TokenBalanceCard';
 
 const STATUS_COLORS = {
   open:        { bg: '#0c1f17', color: '#34d399', border: '#064e3b' },
@@ -162,6 +163,7 @@ export default function ClientDashboard() {
           </div>
           <button onClick={() => navigate("/leaderboard")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}>🏆 Leaderboard</button>
           <button onClick={() => navigate("/messages")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>Messages</button>
+          <button onClick={() => navigate("/billing")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>Tokens</button>
           <button style={st.signOutBtn} onClick={handleSignOut}>Sign out</button>
         </div>
       </nav>
@@ -192,6 +194,7 @@ export default function ClientDashboard() {
       </div>
 
       <div style={st.body}>
+        <TokenBalanceCard />
 
         {/* GIGS TAB */}
         {activeTab === 'gigs' && (

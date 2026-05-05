@@ -252,6 +252,119 @@ const createReport = async ({ reporterID, reportedUserID, gigID, messageID, reas
   return result.recordset[0].ReportID;
 };
 
+const getWalletOverview = async () => {
+  const pool = await poolPromise;
+  const result = await pool.request().query(`
+    select
+      (select coalesce(sum(total_earned_tokens), 0) from user_wallets) as TotalTokensIssued,
+      (select coalesce(sum(total_spent_tokens), 0) from user_wallets) as TotalTokensSpent,
+      (select coalesce(sum(price_pkr), 0) from token_purchases where status = 'paid_demo') as TotalDemoRevenuePKR,
+      (select count(*) from user_wallets where balance_tokens <= 1000) as LowBalanceUsers
+  `);
+  const top = await pool.request().query(`
+    select top 8 u.UserID, u.FullName, u.Role, w.balance_tokens, w.current_plan, w.total_spent_tokens
+    from user_wallets w
+    join Users u on u.UserID = w.user_id
+    order by w.total_spent_tokens desc
+  `);
+  return { summary: result.recordset[0], topSpenders: top.recordset };
+};
+
+const listWallets = async ({ role, q }) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .input('role', sql.NVarChar, role || null)
+    .input('q', sql.NVarChar, q ? `%${q}%` : null)
+    .query(`
+      select
+        u.UserID, u.FullName, u.Email, u.Role,
+        w.id as WalletID, w.balance_tokens, w.current_plan, w.total_earned_tokens, w.total_spent_tokens, w.updated_at
+      from Users u
+      join user_wallets w on w.user_id = u.UserID
+      where u.Role in ('student', 'client')
+        and (@role is null or u.Role = @role)
+        and (@q is null or u.FullName like @q or u.Email like @q)
+      order by w.balance_tokens asc, u.FullName asc
+    `);
+  return result.recordset;
+};
+
+const listTokenPurchases = async () => {
+  const pool = await poolPromise;
+  const result = await pool.request().query(`
+    select top 200 p.*, u.FullName, u.Email, u.Role
+    from token_purchases p
+    join Users u on u.UserID = p.user_id
+    order by p.created_at desc, p.id desc
+  `);
+  return result.recordset;
+};
+
+const listTokenTransactions = async () => {
+  const pool = await poolPromise;
+  const result = await pool.request().query(`
+    select top 300 t.*, u.FullName, u.Email, u.Role
+    from token_transactions t
+    join Users u on u.UserID = t.user_id
+    order by t.created_at desc, t.id desc
+  `);
+  return result.recordset;
+};
+
+const adjustWallet = async (adminID, userID, amount, reason) => {
+  const pool = await poolPromise;
+  const txn = new sql.Transaction(pool);
+  await txn.begin();
+  try {
+    const walletResult = await txn.request()
+      .input('userID', sql.Int, userID)
+      .query(`
+        if not exists (select 1 from user_wallets where user_id = @userID)
+        begin
+          insert into user_wallets (user_id, balance_tokens, current_plan, total_earned_tokens, total_spent_tokens)
+          values (@userID, 10000, 'Free Trial', 10000, 0);
+          insert into token_transactions (user_id, wallet_id, type, amount_tokens, balance_after, reason)
+          values (@userID, scope_identity(), 'credit', 10000, 10000, 'free_trial_signup_bonus');
+        end
+        select * from user_wallets with (updlock, rowlock) where user_id = @userID;
+      `);
+    const wallet = walletResult.recordset[0];
+    const nextBalance = Number(wallet.balance_tokens) + Number(amount);
+    if (nextBalance < 0) throw { status: 400, message: 'wallet balance cannot go below 0.' };
+
+    await txn.request()
+      .input('walletID', sql.Int, wallet.id)
+      .input('userID', sql.Int, userID)
+      .input('amount', sql.Int, Math.abs(Number(amount)))
+      .input('signedAmount', sql.Int, Number(amount))
+      .input('balanceAfter', sql.Int, nextBalance)
+      .input('reason', sql.NVarChar, reason)
+      .query(`
+        update user_wallets
+        set balance_tokens = @balanceAfter,
+            total_earned_tokens = case when @signedAmount > 0 then total_earned_tokens + @signedAmount else total_earned_tokens end,
+            total_spent_tokens = case when @signedAmount < 0 then total_spent_tokens + abs(@signedAmount) else total_spent_tokens end,
+            updated_at = getdate()
+        where id = @walletID;
+
+        insert into token_transactions (user_id, wallet_id, type, amount_tokens, balance_after, reason, reference_type, reference_id)
+        values (@userID, @walletID, 'adjustment', @amount, @balanceAfter, @reason, 'admin_adjustment', @walletID);
+      `);
+
+    await txn.commit();
+    await logAction({
+      adminID,
+      actionType: 'adjust_tokens',
+      targetType: 'wallet',
+      targetID: wallet.id,
+      description: `Adjusted wallet by ${amount} tokens. Reason: ${reason}`,
+    });
+  } catch (err) {
+    await txn.rollback();
+    throw err;
+  }
+};
+
 module.exports = {
   logAction,
   getStats,
@@ -267,4 +380,9 @@ module.exports = {
   setReviewHidden,
   hideMessage,
   createReport,
+  getWalletOverview,
+  listWallets,
+  listTokenPurchases,
+  listTokenTransactions,
+  adjustWallet,
 };

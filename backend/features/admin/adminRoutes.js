@@ -24,5 +24,10 @@ router.patch('/reports/:id/resolve', controller.resolveReport);
 router.get('/reviews', controller.reviews);
 router.patch('/reviews/:id/hide', controller.hideReview);
 router.patch('/reviews/:id/restore', controller.restoreReview);
+router.get('/wallet-overview', controller.walletOverview);
+router.get('/wallets', controller.wallets);
+router.get('/token-purchases', controller.tokenPurchases);
+router.get('/token-transactions', controller.tokenTransactions);
+router.patch('/wallets/:userId/adjust', controller.adjustWallet);
 
 module.exports = router;

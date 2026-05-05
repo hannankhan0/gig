@@ -13,6 +13,7 @@ const reviewRoutes      = require('./features/reviews/reviewRoutes');
 const leaderboardRoutes = require('./features/leaderboard/leaderboardRoutes');
 const chatRoutes        = require('./features/chat/chatRoutes');
 const adminRoutes       = require('./features/admin/adminRoutes');
+const walletRoutes      = require('./features/wallet/walletRoutes');
 
 // future routes uncomment as each feature is built:
 // const applicationRoutes = require('./features/applications/applicationRoutes');
@@ -28,10 +29,10 @@ app.use('/api/gigs',        gigRoutes);
 app.use('/api/reviews',     reviewRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api',             chatRoutes);
+app.use('/api',             walletRoutes);
 app.use('/api/admin',       adminRoutes);
 
 // app.use('/api/applications', applicationRoutes);
-// app.use('/api/wallet',       walletRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'grade and grind backend is running' });

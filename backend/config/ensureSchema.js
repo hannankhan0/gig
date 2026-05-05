@@ -122,6 +122,106 @@ const ensureSchema = async () => {
       );
   `);
   await run(pool, `
+    IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'token_plans')
+      CREATE TABLE token_plans (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        name NVARCHAR(50) NOT NULL UNIQUE,
+        price_pkr INT NOT NULL,
+        tokens INT NOT NULL,
+        is_active BIT NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT GETDATE()
+      );
+  `);
+  await run(pool, `
+    IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'user_wallets')
+      CREATE TABLE user_wallets (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL UNIQUE FOREIGN KEY REFERENCES Users(UserID),
+        balance_tokens INT NOT NULL DEFAULT 10000,
+        current_plan NVARCHAR(50) NOT NULL DEFAULT 'Free Trial',
+        total_earned_tokens INT NOT NULL DEFAULT 10000,
+        total_spent_tokens INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT GETDATE(),
+        updated_at DATETIME NOT NULL DEFAULT GETDATE()
+      );
+  `);
+  await run(pool, `
+    IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'token_transactions')
+      CREATE TABLE token_transactions (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL FOREIGN KEY REFERENCES Users(UserID),
+        wallet_id INT NOT NULL FOREIGN KEY REFERENCES user_wallets(id),
+        type NVARCHAR(20) NOT NULL CHECK (type IN ('credit', 'debit', 'adjustment', 'refund')),
+        amount_tokens INT NOT NULL,
+        balance_after INT NOT NULL,
+        reason NVARCHAR(120) NOT NULL,
+        reference_type NVARCHAR(60) NULL,
+        reference_id INT NULL,
+        created_at DATETIME NOT NULL DEFAULT GETDATE()
+      );
+  `);
+  await run(pool, `
+    IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'token_purchases')
+      CREATE TABLE token_purchases (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL FOREIGN KEY REFERENCES Users(UserID),
+        plan_id INT NOT NULL FOREIGN KEY REFERENCES token_plans(id),
+        plan_name NVARCHAR(50) NOT NULL,
+        price_pkr INT NOT NULL,
+        tokens INT NOT NULL,
+        status NVARCHAR(30) NOT NULL CHECK (status IN ('pending', 'paid_demo', 'failed_demo', 'cancelled', 'refunded')),
+        demo_transaction_id NVARCHAR(80) NOT NULL UNIQUE,
+        payment_method_demo NVARCHAR(50) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT GETDATE(),
+        paid_at DATETIME NULL
+      );
+  `);
+  const purchaseStatusConstraints = await pool.request().query(`
+    SELECT name FROM sys.check_constraints
+    WHERE parent_object_id = OBJECT_ID('token_purchases') AND definition LIKE '%status%'
+  `);
+  for (const row of purchaseStatusConstraints.recordset) {
+    await run(pool, `ALTER TABLE token_purchases DROP CONSTRAINT [${row.name}]`);
+  }
+  await run(pool, `
+    IF NOT EXISTS (
+      SELECT 1 FROM sys.check_constraints
+      WHERE parent_object_id = OBJECT_ID('token_purchases') AND name = 'CK_token_purchases_status'
+    )
+      ALTER TABLE token_purchases ADD CONSTRAINT CK_token_purchases_status CHECK (
+        status IN ('pending', 'paid_demo', 'paid_sandbox', 'paid', 'failed_demo', 'failed_sandbox', 'cancelled', 'refunded')
+      );
+  `);
+  await run(pool, `
+    MERGE token_plans AS target
+    USING (VALUES
+      ('Free Trial', 0, 10000, 1),
+      ('Plus', 500, 10000, 1),
+      ('Pro', 1000, 25000, 1),
+      ('Max', 2000, 60000, 1)
+    ) AS source(name, price_pkr, tokens, is_active)
+    ON target.name = source.name
+    WHEN MATCHED THEN UPDATE SET price_pkr = source.price_pkr, tokens = source.tokens, is_active = source.is_active
+    WHEN NOT MATCHED THEN INSERT (name, price_pkr, tokens, is_active)
+      VALUES (source.name, source.price_pkr, source.tokens, source.is_active);
+  `);
+  await run(pool, `
+    INSERT INTO user_wallets (user_id, balance_tokens, current_plan, total_earned_tokens, total_spent_tokens)
+    SELECT u.UserID, 10000, 'Free Trial', 10000, 0
+    FROM Users u
+    WHERE u.Role IN ('student', 'client')
+      AND NOT EXISTS (SELECT 1 FROM user_wallets w WHERE w.user_id = u.UserID);
+  `);
+  await run(pool, `
+    INSERT INTO token_transactions (user_id, wallet_id, type, amount_tokens, balance_after, reason)
+    SELECT w.user_id, w.id, 'credit', 10000, w.balance_tokens, 'free_trial_signup_bonus'
+    FROM user_wallets w
+    WHERE NOT EXISTS (
+      SELECT 1 FROM token_transactions t
+      WHERE t.wallet_id = w.id AND t.reason = 'free_trial_signup_bonus'
+    );
+  `);
+  await run(pool, `
     INSERT INTO Conversations (GigID, StudentID, ClientID, ConversationStatus, RequestAcceptedAt)
     SELECT g.GigID, a.StudentID, g.ClientID
          , 'active', GETDATE()

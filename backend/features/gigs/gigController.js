@@ -11,8 +11,26 @@ const {
 
 const { findUserByEmail } = require('../auth/authModel');
 const { admin }           = require('../../config/firebase');
+const { assertSufficientTokens, checkAndDeductTokens } = require('../wallet/walletModel');
 
 const VALID_CATEGORIES = ['Development', 'Design', 'Writing', 'Data', 'Marketing', 'Video', 'Other'];
+const TOKEN_COSTS = {
+  createGig: 100,
+  applyGig: 50,
+  acceptApplication: 100,
+};
+
+const tokenErrorResponse = (res, err) => {
+  if (err.code !== 'INSUFFICIENT_TOKENS') return false;
+  res.status(402).json({
+    success: false,
+    code: err.code,
+    message: err.message,
+    requiredTokens: err.requiredTokens,
+    currentBalance: err.currentBalance,
+  });
+  return true;
+};
 
 // ─── HELPER ───────────────────────────────────────────────────────────────────
 const getVerifiedUser = async (req) => {
@@ -115,6 +133,8 @@ const postGig = async (req, res) => {
       return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}.` });
     }
 
+    await assertSufficientTokens(user.UserID, TOKEN_COSTS.createGig);
+
     const gigID = await createGig({
       clientID:       user.UserID,
       title:          title.trim(),
@@ -124,9 +144,11 @@ const postGig = async (req, res) => {
       category:       category || null,
       requiredSkills: requiredSkills?.trim() || null,
     });
+    const tokenBalance = await checkAndDeductTokens(user.UserID, TOKEN_COSTS.createGig, 'client_create_gig', 'gig', gigID);
 
-    res.status(201).json({ message: 'gig posted successfully.', gigID });
+    res.status(201).json({ message: 'gig posted successfully.', gigID, tokenBalance });
   } catch (err) {
+    if (tokenErrorResponse(res, err)) return;
     if (err.status) return res.status(err.status).json({ error: err.message });
     console.error('postGig error:', err.message);
     res.status(500).json({ error: 'could not post gig.' });
@@ -303,6 +325,7 @@ const apply = async (req, res) => {
 
     const { coverLetter, applicationMessage } = req.body;
     const matchScore = await computeMatchScore(gigID, user.UserID);
+    await assertSufficientTokens(user.UserID, TOKEN_COSTS.applyGig);
 
     const applied = await applyToGig({
       gigID,
@@ -311,14 +334,17 @@ const apply = async (req, res) => {
       applicationMessage: applicationMessage || coverLetter || null,
       matchScore,
     });
+    const tokenBalance = await checkAndDeductTokens(user.UserID, TOKEN_COSTS.applyGig, 'student_apply_gig', 'application', applied.ApplicationID);
 
     res.status(201).json({
       message: 'application submitted and message request created.',
       applicationID: applied.ApplicationID,
       conversationID: applied.ConversationID,
       matchScore,
+      tokenBalance,
     });
   } catch (err) {
+    if (tokenErrorResponse(res, err)) return;
     if (err.status) return res.status(err.status).json({ error: err.message });
     console.error('apply error:', err.message);
     res.status(500).json({ error: 'could not submit application.' });
@@ -339,9 +365,12 @@ const accept = async (req, res) => {
     if (gig.ClientID !== user.UserID) return res.status(403).json({ error: 'not your gig.' });
     if (gig.Status !== 'open')        return res.status(400).json({ error: 'gig is no longer open.' });
 
+    await assertSufficientTokens(user.UserID, TOKEN_COSTS.acceptApplication);
     await acceptApplication(parseInt(req.params.appID), parseInt(gigID));
-    res.json({ message: 'application accepted. gig is now in progress.' });
+    const tokenBalance = await checkAndDeductTokens(user.UserID, TOKEN_COSTS.acceptApplication, 'client_accept_application', 'application', parseInt(req.params.appID));
+    res.json({ message: 'application accepted. gig is now in progress.', tokenBalance });
   } catch (err) {
+    if (tokenErrorResponse(res, err)) return;
     if (err.status) return res.status(err.status).json({ error: err.message });
     console.error('accept error:', err.message);
     res.status(500).json({ error: 'could not accept application.' });

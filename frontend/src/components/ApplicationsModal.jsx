@@ -71,7 +71,11 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
       await API.patch(`/gigs/applications/${appID}/accept`, { gigID });
       onAccepted();
     } catch (err) {
-      setError(err.response?.data?.error || 'Could not accept application.');
+      const data = err.response?.data;
+      setError(data?.message || data?.error || 'Could not accept application.');
+      if (data?.code === 'INSUFFICIENT_TOKENS' && window.confirm('Insufficient tokens. Open billing to buy a plan?')) {
+        navigate('/billing');
+      }
       setAccepting(null);
     }
   };
