@@ -19,6 +19,12 @@ const sections = [
   ['wallets', 'User Wallets'],
   ['token-purchases', 'Demo Purchases'],
   ['token-transactions', 'Token Transactions'],
+  ['payment-overview', 'Payment Overview'],
+  ['money-wallets', 'Money Wallets'],
+  ['gig-payments', 'Gig Payments'],
+  ['money-transactions', 'Money Transactions'],
+  ['payment-disputes', 'Disputes'],
+  ['withdrawals', 'Withdrawals'],
   ['settings', 'Settings'],
 ];
 
@@ -104,10 +110,10 @@ export default function AdminPanel() {
     navigate('/auth');
   };
 
-  const searchBar = !['overview', 'messages', 'settings', 'reviews', 'reports', 'wallet-overview', 'token-purchases', 'token-transactions'].includes(section) && (
+  const searchBar = !['overview', 'messages', 'settings', 'reviews', 'reports', 'wallet-overview', 'token-purchases', 'token-transactions', 'payment-overview', 'gig-payments', 'money-transactions', 'payment-disputes', 'withdrawals'].includes(section) && (
     <div style={st.filters}>
       <input style={st.input} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && load()} placeholder={`Search ${section}...`} />
-      {(section === 'users' || section === 'wallets') && (
+      {(section === 'users' || section === 'wallets' || section === 'money-wallets') && (
         <select style={st.input} value={role} onChange={e => setRole(e.target.value)}>
           <option value="">All roles</option><option value="student">Student</option><option value="client">Client</option><option value="admin">Admin</option>
         </select>
@@ -136,7 +142,7 @@ export default function AdminPanel() {
     if (section === 'settings') return (
       <div style={st.card}>
         <h2 style={st.cardTitle}>Settings</h2>
-        <p style={st.muted}>Payments disabled for current iteration. Escrow, invoices, withdrawals, Stripe, and PayPal are future scope.</p>
+        <p style={st.muted}>Sandbox wallet and escrow mode is active. Real gateways, invoices, withdrawals to banks, and subscriptions are future scope.</p>
       </div>
     );
     if (section === 'overview') {
@@ -207,6 +213,69 @@ export default function AdminPanel() {
       { key: 'reason', label: 'Reason' }, { key: 'balance_after', label: 'Balance', render: r => Number(r.balance_after).toLocaleString() },
       { key: 'created_at', label: 'Date', render: r => new Date(r.created_at).toLocaleString() },
     ]} />;
+    if (section === 'payment-overview') {
+      const s = data.summary || {};
+      const cards = [
+        ['Client Wallets', s.TotalClientWalletBalance], ['Escrow Held', s.TotalEscrowHeld],
+        ['Student Earnings', s.TotalStudentEarnings], ['Platform Revenue', s.TotalPlatformRevenue],
+        ['Pending Withdrawals', s.PendingWithdrawals], ['Open Disputes', s.OpenDisputes],
+      ];
+      return <div style={st.statsGrid}>{cards.map(([label, value]) => <div key={label} style={st.stat}><span style={st.statValue}>PKR {Number(value || 0).toLocaleString()}</span><span style={st.statLabel}>{label}</span></div>)}</div>;
+    }
+    if (section === 'money-wallets') return <Table rows={data.wallets} columns={[
+      { key: 'FullName', label: 'User' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+      { key: 'available_balance', label: 'Available', render: r => `PKR ${Number(r.available_balance).toLocaleString()}` },
+      { key: 'locked_balance', label: 'Locked', render: r => `PKR ${Number(r.locked_balance).toLocaleString()}` },
+      { key: 'pending_balance', label: 'Pending', render: r => `PKR ${Number(r.pending_balance).toLocaleString()}` },
+      { key: 'total_earned', label: 'Earned', render: r => `PKR ${Number(r.total_earned).toLocaleString()}` },
+      { key: 'total_spent', label: 'Spent', render: r => `PKR ${Number(r.total_spent).toLocaleString()}` },
+      { key: 'actions', label: 'Actions', render: r => <button style={st.primary} onClick={() => {
+        const raw = window.prompt('Add/remove PKR. Use negative number to remove.');
+        if (!raw) return;
+        const reason = window.prompt('Reason for adjustment?');
+        if (!reason) return;
+        run(async () => { await API.patch(`/admin/money-wallets/${r.UserID}/adjust`, { amount: Number(raw), reason }); return 'Money wallet adjusted.'; });
+      }}>Adjust</button> },
+    ]} />;
+    if (section === 'gig-payments') return <Table rows={data.payments} columns={[
+      { key: 'GigTitle', label: 'Gig' }, { key: 'ClientName', label: 'Client' }, { key: 'StudentName', label: 'Student', render: r => r.StudentName || '-' },
+      { key: 'gig_amount', label: 'Amount', render: r => `PKR ${Number(r.gig_amount).toLocaleString()}` },
+      { key: 'escrow_amount', label: 'Escrow', render: r => `PKR ${Number(r.escrow_amount).toLocaleString()}` },
+      { key: 'platform_fee', label: 'Fee', render: r => `PKR ${Number(r.platform_fee).toLocaleString()}` },
+      { key: 'student_earning', label: 'Student Earned', render: r => `PKR ${Number(r.student_earning).toLocaleString()}` },
+      { key: 'status', label: 'Status', render: r => <Badge>{r.status}</Badge> },
+    ]} />;
+    if (section === 'money-transactions') return <Table rows={data.transactions} columns={[
+      { key: 'FullName', label: 'User' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+      { key: 'type', label: 'Type', render: r => <Badge>{r.type}</Badge> },
+      { key: 'amount', label: 'Amount', render: r => `PKR ${Number(r.amount).toLocaleString()}` },
+      { key: 'balance_after', label: 'Balance After', render: r => `PKR ${Number(r.balance_after).toLocaleString()}` },
+      { key: 'description', label: 'Description' },
+      { key: 'created_at', label: 'Date', render: r => new Date(r.created_at).toLocaleString() },
+    ]} />;
+    if (section === 'payment-disputes') return <Table rows={data.disputes} columns={[
+      { key: 'GigTitle', label: 'Gig' }, { key: 'OpenedByName', label: 'Opened By' }, { key: 'reason', label: 'Reason' },
+      { key: 'status', label: 'Status', render: r => <Badge>{r.status}</Badge> },
+      { key: 'actions', label: 'Resolve', render: r => r.status === 'resolved' ? <span style={st.muted}>Resolved</span> : <span style={st.actions}>
+        <button style={st.greenBtn} onClick={() => run(async () => { await API.patch(`/admin/payment-disputes/${r.id}/resolve`, { decision: 'release_to_student', note: 'Admin released to student.' }); return 'Dispute resolved.'; })}>Release</button>
+        <button style={st.dangerBtn} onClick={() => run(async () => { await API.patch(`/admin/payment-disputes/${r.id}/resolve`, { decision: 'refund_to_client', note: 'Admin refunded client.' }); return 'Dispute resolved.'; })}>Refund</button>
+        <button style={st.primary} onClick={() => {
+          const pct = window.prompt('Student percentage for split?');
+          if (!pct) return;
+          run(async () => { await API.patch(`/admin/payment-disputes/${r.id}/resolve`, { decision: 'split', student_percent: Number(pct), note: `Split ${pct}% to student.` }); return 'Dispute resolved.'; });
+        }}>Split</button>
+      </span> },
+    ]} />;
+    if (section === 'withdrawals') return <Table rows={data.withdrawals} columns={[
+      { key: 'StudentName', label: 'Student' }, { key: 'amount', label: 'Amount', render: r => `PKR ${Number(r.amount).toLocaleString()}` },
+      { key: 'method', label: 'Method' }, { key: 'account_number_masked', label: 'Account' },
+      { key: 'status', label: 'Status', render: r => <Badge>{r.status}</Badge> },
+      { key: 'actions', label: 'Actions', render: r => <span style={st.actions}>
+        {r.status === 'pending' && <button style={st.greenBtn} onClick={() => run(async () => { await API.patch(`/admin/withdrawals/${r.id}/process`, { action: 'approve', note: 'Approved.' }); return 'Withdrawal approved.'; })}>Approve</button>}
+        {r.status === 'pending' && <button style={st.dangerBtn} onClick={() => run(async () => { await API.patch(`/admin/withdrawals/${r.id}/process`, { action: 'reject', note: 'Rejected.' }); return 'Withdrawal rejected.'; })}>Reject</button>}
+        {['pending', 'approved'].includes(r.status) && <button style={st.primary} onClick={() => run(async () => { await API.patch(`/admin/withdrawals/${r.id}/process`, { action: 'paid', note: 'Marked paid in sandbox.' }); return 'Withdrawal marked paid.'; })}>Mark Paid</button>}
+      </span> },
+    ]} />;
     if (section === 'users') return <Table rows={data.users} columns={[
       { key: 'FullName', label: 'Name' }, { key: 'Email', label: 'Email' },
       { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
@@ -259,8 +328,9 @@ export default function AdminPanel() {
   if (section === 'messages') return content;
 
   return (
-    <div style={st.root}>
-      <aside style={st.sidebar}>
+    <div style={st.root} className="gg-admin-root">
+      <style>{`@media (max-width: 920px) { .gg-admin-root { grid-template-columns: 1fr !important; } .gg-admin-sidebar { position: relative !important; height: auto !important; border-right: 0 !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; } .gg-admin-main { padding: 20px 16px 32px !important; } }`}</style>
+      <aside style={st.sidebar} className="gg-admin-sidebar">
         <div style={st.brand}>Grade &amp; Grind</div>
         <div style={st.adminChip}>Admin · {user?.fullName}</div>
         {sections.map(([key, label]) => (
@@ -268,7 +338,7 @@ export default function AdminPanel() {
         ))}
         <button style={st.signOut} onClick={signOutAdmin}>Sign out</button>
       </aside>
-      <main style={st.main}>
+      <main style={st.main} className="gg-admin-main">
         <header style={st.header}>
           <div>
             <h1 style={st.title}>{sections.find(s => s[0] === section)?.[1]}</h1>
@@ -284,31 +354,31 @@ export default function AdminPanel() {
 }
 
 const st = {
-  root: { minHeight: '100vh', background: '#080808', color: '#fff', display: 'grid', gridTemplateColumns: '250px 1fr', fontFamily: "'DM Sans', system-ui, sans-serif" },
-  sidebar: { background: '#101010', borderRight: '1px solid #202020', padding: 18, display: 'flex', flexDirection: 'column', gap: 10 },
-  brand: { fontWeight: 900, fontSize: '1.05rem', marginBottom: 4 },
-  adminChip: { color: '#f59e0b', background: '#1f1607', border: '1px solid #f59e0b22', borderRadius: 10, padding: '9px 10px', fontSize: '0.8rem', marginBottom: 8 },
-  navItem: { textAlign: 'left', background: 'transparent', color: '#aaa', border: '1px solid transparent', borderRadius: 8, padding: '10px 12px', cursor: 'pointer', fontWeight: 700 },
-  navActive: { background: '#f59e0b', color: '#000' },
+  root: { minHeight: '100vh', background: 'radial-gradient(circle at top left, #111827 0, #070a0f 36%, #050608 100%)', color: '#fff', display: 'grid', gridTemplateColumns: '260px minmax(0,1fr)', fontFamily: "'DM Sans', system-ui, sans-serif" },
+  sidebar: { background: 'rgba(8,11,17,0.96)', borderRight: '1px solid rgba(255,255,255,0.08)', padding: 18, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: '12px 0 40px rgba(0,0,0,0.25)' },
+  brand: { fontWeight: 950, fontSize: '1.1rem', marginBottom: 4, letterSpacing: '-0.02em' },
+  adminChip: { color: '#f59e0b', background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.24)', borderRadius: 14, padding: '11px 12px', fontSize: '0.82rem', marginBottom: 8 },
+  navItem: { textAlign: 'left', background: 'transparent', color: '#9ca3af', border: '1px solid transparent', borderRadius: 11, padding: '10px 12px', cursor: 'pointer', fontWeight: 800 },
+  navActive: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f' },
   signOut: { marginTop: 'auto', background: '#1a1a1a', border: '1px solid #333', color: '#ddd', borderRadius: 8, padding: '10px 12px', cursor: 'pointer' },
-  main: { padding: 24, minWidth: 0 },
+  main: { padding: 26, minWidth: 0 },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
-  title: { margin: 0, fontSize: '1.45rem' },
-  muted: { color: '#777', fontSize: '0.82rem' },
+  title: { margin: 0, fontSize: '1.65rem', fontWeight: 950, letterSpacing: '-0.04em' },
+  muted: { color: '#9ca3af', fontSize: '0.84rem' },
   filters: { display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' },
-  input: { background: '#151515', border: '1px solid #2a2a2a', color: '#fff', borderRadius: 9, padding: '10px 12px', outline: 'none' },
-  primary: { background: '#f59e0b', color: '#000', border: 0, borderRadius: 9, padding: '10px 16px', fontWeight: 800, cursor: 'pointer' },
+  input: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 11, padding: '11px 12px', outline: 'none' },
+  primary: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 0, borderRadius: 11, padding: '10px 16px', fontWeight: 900, cursor: 'pointer' },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 },
-  stat: { background: '#141414', border: '1px solid #202020', borderRadius: 12, padding: 16 },
+  stat: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 18, boxShadow: '0 14px 40px rgba(0,0,0,0.16)' },
   statValue: { display: 'block', fontSize: '1.6rem', fontWeight: 900, color: '#f59e0b' },
   statLabel: { color: '#888', fontSize: '0.8rem' },
   grid3: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginBottom: 16 },
-  card: { background: '#111', border: '1px solid #202020', borderRadius: 12, padding: 16, marginBottom: 16 },
-  cardTitle: { margin: '0 0 12px', fontSize: '1rem' },
-  tableWrap: { overflowX: 'auto', background: '#111', border: '1px solid #202020', borderRadius: 12 },
+  card: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 18, marginBottom: 16 },
+  cardTitle: { margin: '0 0 12px', fontSize: '1rem', fontWeight: 900 },
+  tableWrap: { overflowX: 'auto', background: 'rgba(17,24,39,0.62)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16 },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: 760 },
-  th: { textAlign: 'left', color: '#888', fontSize: '0.75rem', padding: '12px 14px', borderBottom: '1px solid #202020', textTransform: 'uppercase' },
-  td: { padding: '12px 14px', borderBottom: '1px solid #1b1b1b', color: '#ddd', fontSize: '0.84rem', verticalAlign: 'top' },
+  th: { textAlign: 'left', color: '#9ca3af', fontSize: '0.72rem', padding: '13px 14px', borderBottom: '1px solid rgba(255,255,255,0.08)', textTransform: 'uppercase', letterSpacing: '0.06em' },
+  td: { padding: '13px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#e5e7eb', fontSize: '0.84rem', verticalAlign: 'top' },
   tr: { background: '#111' },
   badge: { borderRadius: 999, padding: '3px 9px', fontSize: '0.72rem', fontWeight: 800, textTransform: 'capitalize' },
   dangerBtn: { background: '#2d1212', border: '1px solid #7f1d1d', color: '#f87171', borderRadius: 8, padding: '7px 11px', cursor: 'pointer', fontWeight: 700 },

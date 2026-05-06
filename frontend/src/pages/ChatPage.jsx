@@ -143,8 +143,9 @@ export default function ChatPage({ adminMode = false }) {
   };
 
   return (
-    <div style={st.root}>
-      <aside style={st.sidebar}>
+    <div style={st.root} className="gg-chat-root">
+      <style>{`@media (max-width: 860px) { .gg-chat-root { grid-template-columns: 1fr !important; height: auto !important; min-height: 100vh !important; } .gg-chat-sidebar { min-height: auto !important; border-right: 0 !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; } .gg-chat-main { min-height: 560px !important; } }`}</style>
+      <aside style={st.sidebar} className="gg-chat-sidebar">
         <div style={st.sideTop}>
           <button style={st.backBtn} onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}>Back</button>
           <div>
@@ -187,7 +188,7 @@ export default function ChatPage({ adminMode = false }) {
         ))}
       </aside>
 
-      <main style={st.chat}>
+      <main style={st.chat} className="gg-chat-main">
         {!activeID ? (
           <div style={st.center}>Select a conversation to start.</div>
         ) : (
@@ -252,19 +253,19 @@ export default function ChatPage({ adminMode = false }) {
 }
 
 const st = {
-  root: { minHeight: '100vh', background: '#080808', color: '#fff', display: 'grid', gridTemplateColumns: '360px 1fr', fontFamily: "'DM Sans', system-ui, sans-serif" },
-  sidebar: { borderRight: '1px solid #1f1f1f', background: '#101010', padding: 18, display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 },
+  root: { minHeight: '100vh', background: '#070a0f', color: '#fff', display: 'grid', gridTemplateColumns: '360px 1fr', fontFamily: "'DM Sans', system-ui, sans-serif" },
+  sidebar: { borderRight: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,12,18,0.96)', padding: 18, display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0, boxShadow: '12px 0 40px rgba(0,0,0,0.22)' },
   sideTop: { display: 'flex', gap: 12, alignItems: 'center' },
-  backBtn: { background: '#1a1a1a', color: '#f59e0b', border: '1px solid #f59e0b33', borderRadius: 8, padding: '8px 10px', cursor: 'pointer' },
-  title: { margin: 0, fontSize: '1.25rem' },
-  sub: { margin: '3px 0 0', color: '#777', fontSize: '0.82rem' },
-  search: { background: '#171717', border: '1px solid #2a2a2a', color: '#fff', borderRadius: 10, padding: '11px 12px', outline: 'none' },
+  backBtn: { background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 10, padding: '8px 10px', cursor: 'pointer', fontWeight: 800 },
+  title: { margin: 0, fontSize: '1.3rem', fontWeight: 950, letterSpacing: '-0.03em' },
+  sub: { margin: '3px 0 0', color: '#9ca3af', fontSize: '0.82rem' },
+  search: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 12, padding: '12px 13px', outline: 'none' },
   tabs: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
   tab: { background: '#151515', color: '#888', border: '1px solid #252525', borderRadius: 9, padding: '9px 8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.76rem' },
   tabActive: { background: '#1f1607', color: '#f59e0b', borderColor: '#f59e0b55' },
-  conv: { display: 'flex', gap: 11, width: '100%', textAlign: 'left', background: '#141414', border: '1px solid #202020', borderRadius: 12, padding: 12, cursor: 'pointer', color: '#fff' },
-  convActive: { borderColor: '#f59e0b88', background: '#1b160d' },
-  avatar: { width: 42, height: 42, borderRadius: '50%', background: '#2a2a2a', color: '#f59e0b', display: 'grid', placeItems: 'center', fontWeight: 800, flexShrink: 0 },
+  conv: { display: 'flex', gap: 11, width: '100%', textAlign: 'left', background: 'rgba(17,24,39,0.62)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: 13, cursor: 'pointer', color: '#fff', transition: 'border-color 0.15s, transform 0.15s' },
+  convActive: { borderColor: 'rgba(245,158,11,0.65)', background: 'linear-gradient(135deg,rgba(245,158,11,0.12),rgba(17,24,39,0.74))' },
+  avatar: { width: 42, height: 42, borderRadius: '50%', background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b', display: 'grid', placeItems: 'center', fontWeight: 900, flexShrink: 0 },
   convBody: { minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 4 },
   convTop: { display: 'flex', justifyContent: 'space-between', gap: 8 },
   convName: { fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
@@ -274,27 +275,27 @@ const st = {
   dot: { minWidth: 18, height: 18, borderRadius: 999, background: '#f59e0b', color: '#000', display: 'grid', placeItems: 'center', fontSize: '0.68rem', fontWeight: 800 },
   preview: { color: '#777', fontSize: '0.78rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   chat: { display: 'flex', flexDirection: 'column', minHeight: '100vh', minWidth: 0 },
-  chatHeader: { height: 74, borderBottom: '1px solid #1f1f1f', background: '#0f0f0f', display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px' },
-  avatarLarge: { width: 46, height: 46, borderRadius: '50%', background: '#2a2a2a', color: '#f59e0b', display: 'grid', placeItems: 'center', fontWeight: 900 },
+  chatHeader: { minHeight: 78, borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,12,18,0.94)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px' },
+  avatarLarge: { width: 48, height: 48, borderRadius: '50%', background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.32)', color: '#f59e0b', display: 'grid', placeItems: 'center', fontWeight: 950 },
   chatName: { margin: 0, fontSize: '1rem' },
   acceptRequestBtn: { marginLeft: 'auto', background: '#f59e0b', border: 0, color: '#000', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 900 },
   flagBtn: { marginLeft: 'auto', background: '#1c1207', border: '1px solid #78350f', color: '#fbbf24', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 800 },
   notice: { margin: '12px 24px 0', background: '#211608', border: '1px solid #f59e0b33', color: '#fbbf24', borderRadius: 10, padding: '10px 12px', fontSize: '0.82rem' },
-  messages: { flex: 1, overflowY: 'auto', padding: 24, background: '#0a0a0a' },
+  messages: { flex: 1, overflowY: 'auto', padding: 24, background: 'radial-gradient(circle at top right, rgba(245,158,11,0.05), transparent 38%), #070a0f' },
   center: { color: '#666', padding: 30, textAlign: 'center' },
   requestPanel: { margin: '48px auto', maxWidth: 460, background: '#141414', border: '1px solid #2a2a2a', borderRadius: 12, padding: 22, textAlign: 'center' },
   requestTitle: { margin: '0 0 8px', fontSize: '1rem' },
   requestText: { margin: '0 0 16px', color: '#888', lineHeight: 1.5, fontSize: '0.86rem' },
   empty: { color: '#666', padding: 18, fontSize: '0.85rem' },
   row: { display: 'flex', marginBottom: 12 },
-  bubble: { maxWidth: '68%', borderRadius: 14, padding: '10px 12px', border: '1px solid #242424' },
-  mine: { background: '#f59e0b', color: '#111', borderBottomRightRadius: 4 },
-  theirs: { background: '#171717', color: '#e5e5e5', borderBottomLeftRadius: 4 },
+  bubble: { maxWidth: '68%', borderRadius: 18, padding: '11px 13px', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 28px rgba(0,0,0,0.18)' },
+  mine: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#111', borderBottomRightRadius: 5 },
+  theirs: { background: 'rgba(17,24,39,0.82)', color: '#e5e5e5', borderBottomLeftRadius: 5 },
   sender: { color: '#f59e0b', fontSize: '0.72rem', fontWeight: 800, marginBottom: 5, textTransform: 'capitalize' },
   text: { whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.45, fontSize: '0.9rem' },
   msgFooter: { marginTop: 7, display: 'flex', justifyContent: 'space-between', gap: 10, color: '#777', fontSize: '0.72rem' },
   reportBtn: { background: 'transparent', border: 0, color: '#777', cursor: 'pointer', padding: 0, fontSize: '0.72rem' },
-  form: { display: 'flex', gap: 10, padding: 18, borderTop: '1px solid #1f1f1f', background: '#101010' },
-  input: { flex: 1, background: '#171717', border: '1px solid #2a2a2a', color: '#fff', borderRadius: 10, padding: '12px 14px', outline: 'none' },
-  send: { background: '#f59e0b', color: '#000', border: 0, borderRadius: 10, padding: '0 18px', fontWeight: 800, cursor: 'pointer' },
+  form: { display: 'flex', gap: 10, padding: 18, borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,12,18,0.96)' },
+  input: { flex: 1, background: 'rgba(17,24,39,0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 12, padding: '13px 14px', outline: 'none' },
+  send: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 0, borderRadius: 12, padding: '0 20px', fontWeight: 950, cursor: 'pointer' },
 };

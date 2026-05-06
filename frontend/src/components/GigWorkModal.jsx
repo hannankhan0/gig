@@ -157,6 +157,21 @@ function ClientReviewView({ gigID, detail, onUpdated, showToast }) {
     }
   };
 
+  const handleDispute = async () => {
+    const reason = window.prompt('Briefly explain the payment dispute for admin review:');
+    if (!reason?.trim()) return;
+    setBusy(true);
+    try {
+      await API.post(`/gigs/${gigID}/dispute`, { reason: reason.trim() });
+      showToast('Dispute opened for admin review.');
+      onUpdated();
+    } catch (err) {
+      showToast(err.response?.data?.error || err.response?.data?.message || 'Failed to open dispute.', false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Submission card */}
@@ -186,13 +201,16 @@ function ClientReviewView({ gigID, detail, onUpdated, showToast }) {
       {/* Action buttons */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button onClick={handleComplete} disabled={busy} style={st.completeBtn}>
-          ✓ Mark as Completed
+          Release Payment
         </button>
         <button
           onClick={() => setShowRevForm(v => !v)}
           disabled={busy}
           style={st.revisionBtn}>
           ↺ Request Revision
+        </button>
+        <button onClick={handleDispute} disabled={busy} style={st.disputeBtn}>
+          Open Dispute
         </button>
       </div>
 
@@ -429,4 +447,5 @@ const st = {
   primaryBtn:  { background: '#f59e0b', color: '#000', border: 'none', borderRadius: '8px', padding: '9px 18px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
   completeBtn: { background: '#0f172a', border: '1px solid #1e3a5f', color: '#60a5fa', borderRadius: '8px', padding: '9px 16px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
   revisionBtn: { background: '#1c0f07', border: '1px solid #7c2d12', color: '#fb923c', borderRadius: '8px', padding: '9px 16px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
+  disputeBtn: { background: '#2d1212', border: '1px solid #7f1d1d', color: '#f87171', borderRadius: '8px', padding: '9px 16px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
 };

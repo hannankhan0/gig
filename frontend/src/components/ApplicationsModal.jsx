@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import AddFundsModal from './AddFundsModal';
 
 function StarRating({ rating }) {
   return (
@@ -49,12 +50,21 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
   const [accepting,    setAccepting]    = useState(null); // applicationID being accepted
   const [error,        setError]        = useState('');
   const [expanded,     setExpanded]     = useState(null); // expanded cover letter
+  const [payment,      setPayment]      = useState(null);
+  const [wallet,       setWallet]       = useState(null);
+  const [showFunds,    setShowFunds]    = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
         const res = await API.get(`/gigs/${gigID}/applications`);
         setApplications(res.data.applications);
+        const [payRes, walletRes] = await Promise.all([
+          API.get(`/gigs/${gigID}/payment`).catch(() => ({ data: { payment: null } })),
+          API.get('/money-wallet').catch(() => ({ data: { wallet: null } })),
+        ]);
+        setPayment(payRes.data.payment);
+        setWallet(walletRes.data.wallet);
       } catch (err) {
         setError(err.response?.data?.error || 'Could not load applications.');
       } finally {
@@ -65,7 +75,8 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
   }, [gigID]);
 
   const handleAccept = async (appID) => {
-    if (!window.confirm('Accept this applicant? All other applications will be rejected and the gig will move to In Progress.')) return;
+    const remaining = Number(payment?.gig_amount || 0) - Number(payment?.escrow_amount || 0);
+    if (!window.confirm(`Accept this applicant and fund escrow?\n\nRemaining required: PKR ${remaining.toLocaleString()}\nWallet balance: PKR ${Number(wallet?.available_balance || 0).toLocaleString()}`)) return;
     setAccepting(appID);
     try {
       await API.patch(`/gigs/applications/${appID}/accept`, { gigID });
@@ -76,6 +87,7 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
       if (data?.code === 'INSUFFICIENT_TOKENS' && window.confirm('Insufficient tokens. Open billing to buy a plan?')) {
         navigate('/billing');
       }
+      if (data?.code === 'INSUFFICIENT_ESCROW_BALANCE') setShowFunds(true);
       setAccepting(null);
     }
   };
@@ -110,6 +122,12 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
 
         {/* Body */}
         <div style={styles.body}>
+          {payment && (
+            <div style={styles.fundingBox}>
+              Escrow: PKR {Number(payment.escrow_amount).toLocaleString()} / {Number(payment.gig_amount).toLocaleString()}
+              <span> · Remaining: PKR {Math.max(0, Number(payment.gig_amount) - Number(payment.escrow_amount)).toLocaleString()}</span>
+            </div>
+          )}
           {loading ? (
             <div style={styles.center}><div style={styles.spinner} /></div>
           ) : error ? (
@@ -198,6 +216,7 @@ export default function ApplicationsModal({ gigID, onClose, onAccepted }) {
           )}
         </div>
       </div>
+      {showFunds && <AddFundsModal onClose={() => setShowFunds(false)} onSuccess={setWallet} />}
     </div>
   );
 }
@@ -212,6 +231,7 @@ const styles = {
   closeBtn: { background: 'none', border: 'none', color: '#555', fontSize: '1.1rem', cursor: 'pointer', padding: '4px', lineHeight: 1 },
 
   body: { overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' },
+  fundingBox: { background: '#111827', border: '1px solid #f59e0b33', color: '#fbbf24', borderRadius: 12, padding: 12, fontSize: '0.82rem' },
   center: { display: 'flex', justifyContent: 'center', padding: '40px' },
   spinner: { width: 32, height: 32, border: '2px solid #222', borderTop: '2px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
 
