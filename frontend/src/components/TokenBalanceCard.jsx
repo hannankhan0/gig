@@ -50,16 +50,16 @@ export default function TokenBalanceCard({ compact = false }) {
 }
 
 const st = {
-  card: { background: '#111', border: '1px solid #252525', borderRadius: 12, padding: 16, margin: '0 0 16px' },
+  card: { background: 'linear-gradient(145deg, rgba(17,24,39,0.82), rgba(10,12,18,0.9))', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, padding: 18, margin: '0 0 16px', boxShadow: '0 18px 50px rgba(0,0,0,0.22)' },
   compact: { maxWidth: 420 },
   top: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  label: { color: '#777', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' },
+  label: { color: '#9ca3af', fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' },
   plan: { color: '#f59e0b', fontWeight: 900, marginTop: 3 },
-  buy: { background: '#f59e0b', color: '#000', border: 0, borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 900 },
-  balance: { fontSize: '1.8rem', fontWeight: 900, marginTop: 12 },
-  track: { height: 8, background: '#222', borderRadius: 999, overflow: 'hidden', marginTop: 8 },
-  fill: { height: '100%', background: '#f59e0b' },
-  meta: { display: 'flex', justifyContent: 'space-between', color: '#777', fontSize: '0.76rem', marginTop: 8 },
+  buy: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 0, borderRadius: 11, padding: '9px 13px', cursor: 'pointer', fontWeight: 950, boxShadow: '0 12px 24px rgba(245,158,11,0.18)' },
+  balance: { fontSize: '2rem', fontWeight: 950, marginTop: 14, letterSpacing: '-0.04em' },
+  track: { height: 9, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginTop: 9 },
+  fill: { height: '100%', background: 'linear-gradient(90deg,#f59e0b,#facc15)' },
+  meta: { display: 'flex', justifyContent: 'space-between', color: '#9ca3af', fontSize: '0.76rem', marginTop: 9, gap: 10, flexWrap: 'wrap' },
   warn: { marginTop: 10, color: '#fbbf24', background: '#1c1207', border: '1px solid #78350f', borderRadius: 8, padding: '8px 10px', fontSize: '0.8rem' },
   block: { marginTop: 10, color: '#f87171', background: '#2d1212', border: '1px solid #7f1d1d', borderRadius: 8, padding: '8px 10px', fontSize: '0.8rem' },
 };

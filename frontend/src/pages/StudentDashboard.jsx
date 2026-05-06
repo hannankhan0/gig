@@ -9,6 +9,7 @@ import GigWorkModal from '../components/GigWorkModal';
 import GigDetailModal from '../components/GigDetailModal';
 import ApplicationDetailModal from '../components/ApplicationDetailModal';
 import TokenBalanceCard from '../components/TokenBalanceCard';
+import MoneyWalletCard from '../components/MoneyWalletCard';
 
 
 // ── Inline card countdown ─────────────────────────────────────────────────────
@@ -246,7 +247,7 @@ export default function StudentDashboard() {
 
   return (
     <div style={st.root}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} } @keyframes colonBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} } @keyframes colonBlink { 0%,100%{opacity:1} 50%{opacity:0.3} } @media (max-width: 900px) { .gg-student-body { grid-template-columns: 1fr !important; padding: 20px 16px 32px !important; } .gg-student-hero { grid-template-columns: 1fr !important; } }`}</style>
 
       {/* NAVBAR */}
       <nav style={st.nav}>
@@ -292,8 +293,9 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      <div style={st.body}>
+      <div style={st.body} className="gg-student-body">
         <div style={{ gridColumn: '1 / -1' }}>
+          <MoneyWalletCard role="student" />
           <TokenBalanceCard />
         </div>
         {/* LEFT: Matched Gigs */}
@@ -369,6 +371,7 @@ export default function StudentDashboard() {
                 <div style={st.assignMeta}>
                   <StatusPill status={app.ApplicationStatus} map={appStatusColors} />
                   <StatusPill status={app.GigStatus} map={gigStatusColors} />
+                  {app.PaymentStatus && <StatusPill status={app.PaymentStatus} map={gigStatusColors} />}
                   {app.MatchScore > 0 && <MatchBadge score={app.MatchScore} />}
                 </div>
                 <div style={{ color: '#555', fontSize: '0.75rem', marginTop: '6px' }}>
@@ -506,58 +509,58 @@ export default function StudentDashboard() {
 }
 
 const st = {
-  root: { minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif" },
-  loadingWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a' },
-  spinner: { width: 40, height: 40, border: '3px solid #222', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+  root: { minHeight: '100vh', background: 'radial-gradient(circle at top left, #151006 0, #070a0f 34%, #050608 100%)', color: '#f9fafb', fontFamily: "'DM Sans', system-ui, sans-serif" },
+  loadingWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070a0f' },
+  spinner: { width: 40, height: 40, border: '3px solid rgba(255,255,255,0.08)', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
 
-  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '58px', background: '#111', borderBottom: '1px solid #1e1e1e' },
-  navBrand: { fontWeight: 800, fontSize: '1.1rem', color: '#fff' },
-  navRight: { display: 'flex', alignItems: 'center', gap: '10px' },
-  userChip: { display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '20px', padding: '4px 12px 4px 14px' },
+  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', minHeight: '66px', background: 'rgba(7,10,15,0.9)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(255,255,255,0.08)', position: 'sticky', top: 0, zIndex: 50, flexWrap: 'wrap', gap: 10 },
+  navBrand: { fontWeight: 900, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em' },
+  navRight: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+  userChip: { display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '5px 12px 5px 14px' },
   chipName: { fontSize: '0.85rem', fontWeight: 600, color: '#e5e5e5' },
   chipRole: { background: '#14532d', color: '#4ade80', borderRadius: '20px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 },
-  signOutBtn: { background: '#f59e0b', color: '#000', border: 'none', borderRadius: '8px', padding: '7px 16px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
+  signOutBtn: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 'none', borderRadius: '10px', padding: '8px 16px', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 10px 24px rgba(245,158,11,0.2)' },
 
-  hero: { padding: '24px 32px 20px', borderBottom: '1px solid #1e1e1e', background: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  heroTitle: { margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#fff' },
-  heroSub: { margin: '4px 0 0', color: '#666', fontSize: '0.88rem' },
-  editProfileBtn: { background: '#1a1a1a', border: '1px solid #f59e0b40', color: '#f59e0b', borderRadius: '8px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' },
+  hero: { margin: '24px 32px 0', padding: '26px 28px', border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(135deg,rgba(245,158,11,0.09),rgba(17,24,39,0.72))', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', boxShadow: '0 24px 80px rgba(0,0,0,0.28)' },
+  heroTitle: { margin: 0, fontSize: 'clamp(1.45rem,3vw,2.2rem)', fontWeight: 950, color: '#fff', letterSpacing: '-0.04em' },
+  heroSub: { margin: '7px 0 0', color: '#9ca3af', fontSize: '0.94rem' },
+  editProfileBtn: { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.32)', color: '#f59e0b', borderRadius: '12px', padding: '10px 18px', fontSize: '0.84rem', fontWeight: 900, cursor: 'pointer' },
 
-  completeBanner: { display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 32px', background: '#111', borderBottom: '1px solid #1e1e1e' },
-  progressBar: { height: '4px', background: '#2a2a2a', borderRadius: '2px', overflow: 'hidden' },
+  completeBanner: { display: 'flex', alignItems: 'center', gap: '16px', margin: '16px 32px 0', padding: '16px 18px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: 18 },
+  progressBar: { height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '999px', overflow: 'hidden' },
   progressFill: { height: '100%', background: '#f59e0b', borderRadius: '2px', transition: 'width 0.3s' },
   completeBtn: { background: '#f59e0b', border: 'none', color: '#000', borderRadius: '8px', padding: '7px 14px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0 },
 
-  body: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: '24px', padding: '24px 32px', maxWidth: '1100px' },
+  body: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(320px,360px)', gap: '24px', padding: '24px 32px', maxWidth: '1180px', width: '100%', boxSizing: 'border-box' },
 
   col: { display: 'flex', flexDirection: 'column', gap: '12px' },
   sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle: { margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#e5e5e5' },
+  sectionTitle: { margin: 0, fontSize: '1rem', fontWeight: 900, color: '#f9fafb', letterSpacing: '-0.02em' },
 
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '4px' },
   filterChip: { padding: '5px 12px', borderRadius: '20px', border: '1px solid', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' },
 
-  gigCard: { background: '#141414', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '14px 16px' },
+  gigCard: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px 20px', boxShadow: '0 14px 40px rgba(0,0,0,0.16)' },
   gigCardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' },
-  gigTitle: { fontWeight: 700, fontSize: '0.93rem', color: '#fff', marginBottom: '4px' },
-  gigDesc: { color: '#777', fontSize: '0.8rem', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  gigTitle: { fontWeight: 900, fontSize: '1rem', color: '#fff', marginBottom: '5px', letterSpacing: '-0.02em' },
+  gigDesc: { color: '#9ca3af', fontSize: '0.82rem', lineHeight: '1.55', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   gigMeta: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' },
-  gigBudget: { color: '#999', fontSize: '0.8rem' },
-  catBadge: { padding: '2px 8px', background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#888', borderRadius: '6px', fontSize: '0.72rem' },
+  gigBudget: { color: '#f59e0b', fontSize: '0.82rem', fontWeight: 900 },
+  catBadge: { padding: '3px 9px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#9ca3af', borderRadius: '999px', fontSize: '0.72rem' },
 
-  applyBtn: { marginTop: '10px', background: '#f59e0b', color: '#000', border: 'none', borderRadius: '8px', padding: '7px 16px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' },
+  applyBtn: { marginTop: '10px', background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 'none', borderRadius: '10px', padding: '8px 16px', fontWeight: 900, fontSize: '0.8rem', cursor: 'pointer' },
   cancelBtn: { background: '#1a1a1a', color: '#aaa', border: '1px solid #2a2a2a', borderRadius: '8px', padding: '7px 16px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
 
-  assignCard: { background: '#141414', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '14px 16px' },
-  assignTitle: { fontWeight: 700, fontSize: '0.9rem', color: '#fff', marginBottom: '8px' },
+  assignCard: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px 20px', boxShadow: '0 14px 40px rgba(0,0,0,0.16)' },
+  assignTitle: { fontWeight: 900, fontSize: '0.96rem', color: '#fff', marginBottom: '8px', letterSpacing: '-0.02em' },
   assignMeta: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
   withdrawBtn: { background: 'transparent', border: '1px solid #7f1d1d', color: '#f87171', borderRadius: '6px', padding: '4px 12px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' },
   viewChatBtn: { background: '#1a1a1a', border: '1px solid #f59e0b44', color: '#f59e0b', borderRadius: '8px', padding: '7px 16px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' },
 
-  empty: { color: '#555', fontSize: '0.85rem', padding: '20px 0' },
+  empty: { color: '#6b7280', fontSize: '0.86rem', padding: '32px 18px', textAlign: 'center', background: 'rgba(17,24,39,0.45)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18 },
 
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 },
-  modal: { background: '#141414', border: '1px solid #2a2a2a', borderRadius: '16px', padding: '28px', width: '480px', maxWidth: '90vw' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.76)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 18 },
+  modal: { background: 'rgba(17,24,39,0.98)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '22px', padding: '28px', width: '480px', maxWidth: '90vw', boxShadow: '0 28px 90px rgba(0,0,0,0.5)' },
   modalTitle: { margin: '0 0 6px', fontSize: '1.1rem', fontWeight: 800, color: '#fff' },
   modalSub: { color: '#777', fontSize: '0.85rem', margin: '0 0 14px', lineHeight: 1.5 },
   label: { display: 'block', fontSize: '0.82rem', color: '#aaa', marginBottom: '6px', fontWeight: 600 },

@@ -9,6 +9,7 @@ import PostGigModal from '../components/PostGigModal';
 import ApplicationsModal from '../components/ApplicationsModal';
 import GigWorkModal from '../components/GigWorkModal';
 import TokenBalanceCard from '../components/TokenBalanceCard';
+import MoneyWalletCard from '../components/MoneyWalletCard';
 
 const STATUS_COLORS = {
   open:        { bg: '#0c1f17', color: '#34d399', border: '#064e3b' },
@@ -151,7 +152,7 @@ export default function ClientDashboard() {
 
   return (
     <div style={st.root}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } @media (max-width: 900px) { .gg-client-body { padding: 20px 16px 32px !important; } .gg-client-tabs { overflow-x: auto !important; padding: 0 16px !important; } }`}</style>
 
       {/* NAV */}
       <nav style={st.nav}>
@@ -180,7 +181,7 @@ export default function ClientDashboard() {
       </div>
 
       {/* TABS */}
-      <div style={st.tabRow}>
+      <div style={st.tabRow} className="gg-client-tabs">
         {['gigs', 'students'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             style={{
@@ -193,7 +194,8 @@ export default function ClientDashboard() {
         ))}
       </div>
 
-      <div style={st.body}>
+      <div style={st.body} className="gg-client-body">
+        <MoneyWalletCard role="client" />
         <TokenBalanceCard />
 
         {/* GIGS TAB */}
@@ -251,6 +253,10 @@ export default function ClientDashboard() {
                       <div style={st.statChip}>
                         <span style={st.statNum}>{gig.AcceptedCount}</span>
                         <span style={st.statLabel}>accepted</span>
+                      </div>
+                      <div style={st.statChip}>
+                        <span style={st.statNum}>{gig.PaymentStatus ? gig.PaymentStatus.replace('_', ' ') : 'pending'}</span>
+                        <span style={st.statLabel}>payment</span>
                       </div>
                     </div>
 
@@ -447,56 +453,56 @@ export default function ClientDashboard() {
 }
 
 const st = {
-  root: { minHeight: '100vh', background: '#0a0a0a', color: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif" },
-  loadingWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a' },
-  spinner: { width: 40, height: 40, border: '3px solid #222', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+  root: { minHeight: '100vh', background: 'radial-gradient(circle at top left, #0b1728 0, #070a0f 36%, #050608 100%)', color: '#fff', fontFamily: "'DM Sans', system-ui, sans-serif" },
+  loadingWrap: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070a0f' },
+  spinner: { width: 40, height: 40, border: '3px solid rgba(255,255,255,0.08)', borderTop: '3px solid #f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
 
-  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: '58px', background: '#111', borderBottom: '1px solid #1e1e1e' },
-  navBrand: { fontWeight: 800, fontSize: '1.1rem', color: '#fff' },
-  navRight: { display: 'flex', alignItems: 'center', gap: '10px' },
-  userChip: { display: 'flex', alignItems: 'center', gap: '8px', background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '20px', padding: '4px 12px 4px 14px' },
+  nav: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', minHeight: '66px', background: 'rgba(7,10,15,0.9)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(255,255,255,0.08)', position: 'sticky', top: 0, zIndex: 50, flexWrap: 'wrap', gap: 10 },
+  navBrand: { fontWeight: 900, fontSize: '1.1rem', color: '#fff', letterSpacing: '-0.02em' },
+  navRight: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+  userChip: { display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '5px 12px 5px 14px' },
   chipName: { fontSize: '0.85rem', fontWeight: 600, color: '#e5e5e5' },
   chipRoleClient: { background: '#1c3d6b', color: '#60a5fa', borderRadius: '20px', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 },
-  signOutBtn: { background: '#f59e0b', color: '#000', border: 'none', borderRadius: '8px', padding: '7px 16px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' },
+  signOutBtn: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 'none', borderRadius: '10px', padding: '8px 16px', fontWeight: 900, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 10px 24px rgba(245,158,11,0.2)' },
 
-  hero: { padding: '28px 32px 24px', borderBottom: '1px solid #1e1e1e', background: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  heroTitle: { margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#fff' },
-  heroSub: { margin: '4px 0 0', color: '#666', fontSize: '0.9rem' },
-  postGigBtn: { background: '#f59e0b', color: '#000', border: 'none', borderRadius: '10px', padding: '10px 22px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer' },
+  hero: { margin: '24px 32px 0', padding: '28px', border: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(135deg,rgba(59,130,246,0.1),rgba(17,24,39,0.72))', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', boxShadow: '0 24px 80px rgba(0,0,0,0.28)' },
+  heroTitle: { margin: 0, fontSize: 'clamp(1.5rem,3vw,2.25rem)', fontWeight: 950, color: '#fff', letterSpacing: '-0.04em' },
+  heroSub: { margin: '7px 0 0', color: '#9ca3af', fontSize: '0.94rem' },
+  postGigBtn: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 'none', borderRadius: '12px', padding: '11px 22px', fontWeight: 950, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 14px 28px rgba(245,158,11,0.2)' },
 
-  tabRow: { display: 'flex', padding: '0 32px', background: '#0f0f0f', borderBottom: '1px solid #1e1e1e' },
+  tabRow: { display: 'flex', padding: '16px 32px 0', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.07)', gap: 8, flexWrap: 'wrap' },
   tabBtn: { padding: '14px 20px', background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer', transition: 'color 0.15s' },
 
-  body: { padding: '24px 32px', maxWidth: '960px' },
+  body: { padding: '24px 32px', maxWidth: '1120px', width: '100%', boxSizing: 'border-box' },
 
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' },
   filterChip: { padding: '5px 12px', borderRadius: '20px', border: '1px solid', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' },
 
   gigGrid: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  gigCard: { background: '#141414', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '18px 20px' },
+  gigCard: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '20px 22px', boxShadow: '0 14px 40px rgba(0,0,0,0.16)' },
   gigTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '10px' },
-  gigTitle: { fontWeight: 700, fontSize: '1rem', color: '#fff', marginBottom: '4px' },
-  gigDesc: { color: '#777', fontSize: '0.82rem', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  gigTitle: { fontWeight: 900, fontSize: '1.05rem', color: '#fff', marginBottom: '5px', letterSpacing: '-0.02em' },
+  gigDesc: { color: '#9ca3af', fontSize: '0.84rem', lineHeight: '1.55', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   gigMeta: { marginBottom: '12px' },
   metaText: { color: '#888', fontSize: '0.82rem' },
 
   statsRow: { display: 'flex', gap: '8px', marginBottom: '14px' },
-  statChip: { background: '#1a1a1a', border: '1px solid #222', borderRadius: '8px', padding: '6px 14px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '60px' },
+  statChip: { background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '8px 15px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '66px' },
   statNum: { fontWeight: 800, fontSize: '1rem', color: '#f59e0b' },
   statLabel: { fontSize: '0.68rem', color: '#666', marginTop: '1px' },
 
   cardActions: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
-  viewAppsBtn: { background: '#1a1a1a', border: '1px solid #f59e0b33', color: '#f59e0b', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
+  viewAppsBtn: { background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.28)', color: '#f59e0b', borderRadius: '10px', padding: '7px 14px', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer' },
   editBtn:     { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#aaa', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
   pauseBtn:    { background: '#1a1500', border: '1px solid #713f12', color: '#facc15', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
   resumeBtn:   { background: '#0c1f17', border: '1px solid #064e3b', color: '#34d399', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
   closeBtn:    { background: '#1c1207', border: '1px solid #78350f', color: '#fbbf24', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' },
   deleteBtn:   { background: 'transparent', border: '1px solid #7f1d1d', color: '#f87171', borderRadius: '8px', padding: '6px 14px', fontSize: '0.8rem', cursor: 'pointer' },
 
-  searchInput: { width: '100%', padding: '10px 14px', background: '#141414', border: '1px solid #2a2a2a', borderRadius: '10px', color: '#fff', fontSize: '0.88rem', outline: 'none', marginBottom: '16px', boxSizing: 'border-box' },
+  searchInput: { width: '100%', padding: '12px 14px', background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '0.9rem', outline: 'none', marginBottom: '16px', boxSizing: 'border-box' },
 
   studentGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' },
-  studentCard: { background: '#141414', border: '1px solid #1e1e1e', borderRadius: '12px', padding: '16px' },
+  studentCard: { background: 'rgba(17,24,39,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px', padding: '18px', boxShadow: '0 14px 40px rgba(0,0,0,0.14)' },
   studentTop: { display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '10px' },
   avatar: { width: 44, height: 44, borderRadius: '50%', background: '#2a2a2a', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   avatarImg: { width: '100%', height: '100%', objectFit: 'cover' },
@@ -508,7 +514,7 @@ const st = {
   skillTag: { padding: '2px 8px', background: '#1a1200', border: '1px solid #f59e0b20', color: '#f59e0b', borderRadius: '20px', fontSize: '0.72rem' },
   studentFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
 
-  empty: { color: '#555', fontSize: '0.88rem', padding: '20px 0' },
+  empty: { color: '#6b7280', fontSize: '0.88rem', padding: '34px 18px', textAlign: 'center', background: 'rgba(17,24,39,0.45)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18 },
   inlineLink: { background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', fontSize: '0.88rem', textDecoration: 'underline', padding: 0 },
 
   toast: { position: 'fixed', bottom: '28px', right: '28px', border: '1px solid', borderRadius: '10px', padding: '12px 20px', fontSize: '0.88rem', fontWeight: 600, zIndex: 200 },

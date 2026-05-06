@@ -28,8 +28,9 @@ export default function BillingPage() {
   if (!wallet) return <div style={st.root}><div style={st.empty}>Loading billing...</div></div>;
 
   return (
-    <div style={st.root}>
-      <header style={st.header}>
+    <div style={st.root} className="gg-billing-root">
+      <style>{`@media (max-width: 760px) { .gg-billing-root { padding: 18px 14px 32px !important; } .gg-billing-header { align-items: flex-start !important; flex-direction: column !important; } }`}</style>
+      <header style={st.header} className="gg-billing-header">
         <button style={st.back} onClick={() => navigate('/dashboard')}>Back</button>
         <div>
           <h1 style={st.title}>Tokens & Billing</h1>
@@ -105,27 +106,27 @@ function Table({ rows, columns }) {
 }
 
 const st = {
-  root: { minHeight: '100vh', background: '#080808', color: '#fff', padding: 24, fontFamily: "'DM Sans', system-ui, sans-serif" },
-  header: { display: 'flex', gap: 14, alignItems: 'center', marginBottom: 18 },
-  back: { background: '#1a1a1a', color: '#f59e0b', border: '1px solid #f59e0b44', borderRadius: 8, padding: '9px 12px', cursor: 'pointer' },
-  title: { margin: 0, fontSize: '1.55rem' },
-  muted: { margin: '4px 0 0', color: '#888', fontSize: '0.86rem' },
+  root: { minHeight: '100vh', background: 'radial-gradient(circle at top left, #151006 0, #070a0f 36%, #050608 100%)', color: '#fff', padding: 26, fontFamily: "'DM Sans', system-ui, sans-serif" },
+  header: { display: 'flex', gap: 14, alignItems: 'center', marginBottom: 22, maxWidth: 1180 },
+  back: { background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontWeight: 900 },
+  title: { margin: 0, fontSize: 'clamp(1.55rem,3vw,2.25rem)', fontWeight: 950, letterSpacing: '-0.04em' },
+  muted: { margin: '6px 0 0', color: '#9ca3af', fontSize: '0.9rem' },
   walletGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 22 },
-  stat: { background: '#111', border: '1px solid #242424', borderRadius: 12, padding: 16 },
-  section: { fontSize: '1rem', margin: '18px 0 12px' },
+  stat: { background: 'rgba(17,24,39,0.74)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18, boxShadow: '0 14px 42px rgba(0,0,0,0.18)' },
+  section: { fontSize: '1.05rem', margin: '22px 0 12px', fontWeight: 950, letterSpacing: '-0.02em' },
   plans: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 12 },
-  planCard: { background: '#111', border: '1px solid #242424', borderRadius: 12, padding: 16 },
-  activePlan: { borderColor: '#f59e0b66' },
-  planName: { fontWeight: 900, color: '#f59e0b' },
-  price: { fontSize: '1.3rem', fontWeight: 900, marginTop: 10 },
-  tokens: { color: '#aaa', margin: '6px 0 14px' },
-  buy: { background: '#f59e0b', color: '#000', border: 0, borderRadius: 8, padding: '9px 14px', cursor: 'pointer', fontWeight: 900 },
-  disabled: { background: '#222', color: '#777', border: 0, borderRadius: 8, padding: '9px 14px' },
-  helper: { color: '#777', fontSize: '0.76rem', marginTop: 8 },
+  planCard: { background: 'linear-gradient(145deg,rgba(17,24,39,0.8),rgba(8,10,15,0.88))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 18, boxShadow: '0 18px 48px rgba(0,0,0,0.2)' },
+  activePlan: { borderColor: 'rgba(245,158,11,0.55)', boxShadow: '0 18px 48px rgba(245,158,11,0.08)' },
+  planName: { fontWeight: 950, color: '#f59e0b', letterSpacing: '-0.02em' },
+  price: { fontSize: '1.45rem', fontWeight: 950, marginTop: 12 },
+  tokens: { color: '#9ca3af', margin: '7px 0 16px' },
+  buy: { background: 'linear-gradient(135deg,#f59e0b,#facc15)', color: '#070a0f', border: 0, borderRadius: 11, padding: '10px 15px', cursor: 'pointer', fontWeight: 950, boxShadow: '0 12px 26px rgba(245,158,11,0.18)' },
+  disabled: { background: 'rgba(255,255,255,0.08)', color: '#7b8190', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 11, padding: '10px 15px' },
+  helper: { color: '#9ca3af', fontSize: '0.76rem', marginTop: 9 },
   twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 16 },
-  tableWrap: { background: '#111', border: '1px solid #242424', borderRadius: 12, overflowX: 'auto' },
+  tableWrap: { background: 'rgba(17,24,39,0.68)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, overflowX: 'auto', boxShadow: '0 14px 42px rgba(0,0,0,0.15)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  td: { padding: 12, borderBottom: '1px solid #1f1f1f', color: '#ddd', fontSize: '0.78rem', verticalAlign: 'top' },
-  empty: { color: '#777', padding: 24 },
+  td: { padding: 14, borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#e5e7eb', fontSize: '0.8rem', verticalAlign: 'top' },
+  empty: { color: '#9ca3af', padding: 26, background: 'rgba(17,24,39,0.45)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 },
   error: { background: '#2d1212', border: '1px solid #7f1d1d', color: '#f87171', borderRadius: 10, padding: 12, marginBottom: 12 },
 };

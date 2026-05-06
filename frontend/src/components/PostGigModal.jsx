@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
+import AddFundsModal from './AddFundsModal';
 
 const CATEGORIES = ['Development', 'Design', 'Writing', 'Data', 'Marketing', 'Video', 'Other'];
 const TODAY = new Date().toISOString().split('T')[0]; // FIX: min date for deadline
@@ -17,6 +18,9 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
   });
   const [error,      setError]      = useState('');
   const [needsTokens, setNeedsTokens] = useState(false);
+  const [needsFunds, setNeedsFunds] = useState(false);
+  const [wallet, setWallet] = useState(null);
+  const [showFunds, setShowFunds] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // pre-fill form if editing
@@ -32,6 +36,10 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
       });
     }
   }, [editGig]);
+
+  useEffect(() => {
+    if (!isEdit) API.get('/money-wallet').then(res => setWallet(res.data.wallet)).catch(() => {});
+  }, [isEdit]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -54,6 +62,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
     }
     setError('');
     setNeedsTokens(false);
+    setNeedsFunds(false);
     setSubmitting(true);
     try {
       const payload = {
@@ -72,6 +81,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
     } catch (err) {
       const data = err.response?.data;
       setNeedsTokens(data?.code === 'INSUFFICIENT_TOKENS');
+      setNeedsFunds(data?.code === 'INSUFFICIENT_DEPOSIT_BALANCE');
       setError(data?.message || data?.error || 'Failed to save gig. Please try again.');
     } finally {
       setSubmitting(false);
@@ -115,7 +125,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
           </Field>
 
           <div style={styles.row}>
-            <Field label="Budget (PKR)" hint="Leave blank if negotiable">
+          <Field label="Budget (PKR)" hint="Leave blank if negotiable">
               <input
                 style={styles.input}
                 type="number"
@@ -135,6 +145,16 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
               />
             </Field>
           </div>
+
+          {!isEdit && form.budget && (
+            <div style={styles.escrowBox}>
+              <div><strong>Required deposit:</strong> PKR {Number(parseFloat(form.budget || 0) * 0.3).toLocaleString()}</div>
+              <div><strong>Wallet balance:</strong> PKR {Number(wallet?.available_balance || 0).toLocaleString()}</div>
+              {Number(wallet?.available_balance || 0) < Number(parseFloat(form.budget || 0) * 0.3) && (
+                <div style={{ color: '#fbbf24', marginTop: 6 }}>Add funds before posting this gig.</div>
+              )}
+            </div>
+          )}
 
           <Field label="Category">
             <select
@@ -164,6 +184,11 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
             Buy Tokens
           </button>
         )}
+        {needsFunds && (
+          <button style={{ ...styles.submitBtn, margin: '0 24px 12px' }} onClick={() => setShowFunds(true)}>
+            Add Funds
+          </button>
+        )}
 
         <div style={styles.footer}>
           <button style={styles.cancelBtn} onClick={onClose}>Cancel</button>
@@ -171,6 +196,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
             {submitting ? (isEdit ? 'Saving...' : 'Posting...') : isEdit ? 'Save Changes' : 'Post Gig'}
           </button>
         </div>
+        {showFunds && <AddFundsModal onClose={() => setShowFunds(false)} onSuccess={setWallet} />}
       </div>
     </div>
   );
@@ -200,6 +226,7 @@ const styles = {
   label: { fontSize: '0.82rem', fontWeight: 600, color: '#aaa' },
   hint: { margin: '3px 0 0', color: '#555', fontSize: '0.75rem' },
   input: { background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#fff', padding: '10px 12px', fontSize: '0.88rem', outline: 'none', fontFamily: 'inherit', width: '100%', boxSizing: 'border-box' },
+  escrowBox: { background: '#111827', border: '1px solid #f59e0b33', color: '#e5e7eb', borderRadius: 12, padding: 12, fontSize: '0.82rem', lineHeight: 1.6 },
   error: { margin: '0 24px', color: '#f87171', fontSize: '0.83rem' },
   footer: { padding: '16px 24px 24px', display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #1e1e1e' },
   cancelBtn: { background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#aaa', borderRadius: '8px', padding: '9px 20px', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer' },
