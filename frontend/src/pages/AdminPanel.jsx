@@ -15,6 +15,10 @@ const sections = [
   ['messages', 'Messages'],
   ['reports', 'Reports'],
   ['reviews', 'Reviews'],
+  ['wallet-overview', 'Wallet Overview'],
+  ['wallets', 'User Wallets'],
+  ['token-purchases', 'Demo Purchases'],
+  ['token-transactions', 'Token Transactions'],
   ['settings', 'Settings'],
 ];
 
@@ -100,10 +104,10 @@ export default function AdminPanel() {
     navigate('/auth');
   };
 
-  const searchBar = !['overview', 'messages', 'settings', 'reviews', 'reports'].includes(section) && (
+  const searchBar = !['overview', 'messages', 'settings', 'reviews', 'reports', 'wallet-overview', 'token-purchases', 'token-transactions'].includes(section) && (
     <div style={st.filters}>
       <input style={st.input} value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && load()} placeholder={`Search ${section}...`} />
-      {section === 'users' && (
+      {(section === 'users' || section === 'wallets') && (
         <select style={st.input} value={role} onChange={e => setRole(e.target.value)}>
           <option value="">All roles</option><option value="student">Student</option><option value="client">Client</option><option value="admin">Admin</option>
         </select>
@@ -154,6 +158,55 @@ export default function AdminPanel() {
         </>
       );
     }
+    if (section === 'wallet-overview') {
+      const s = data.summary || {};
+      const cards = [
+        ['Tokens Issued', s.TotalTokensIssued], ['Tokens Spent', s.TotalTokensSpent],
+        ['Demo Revenue PKR', s.TotalDemoRevenuePKR], ['Low Balance Users', s.LowBalanceUsers],
+      ];
+      return (
+        <>
+          <div style={st.warning}>Demo payment mode active — no real financial transaction processed.</div>
+          <div style={st.statsGrid}>{cards.map(([label, value]) => <div key={label} style={st.stat}><span style={st.statValue}>{Number(value || 0).toLocaleString()}</span><span style={st.statLabel}>{label}</span></div>)}</div>
+          <div style={st.card}><h3 style={st.cardTitle}>Top Token Spenders</h3><Table rows={data.topSpenders} columns={[
+            { key: 'FullName', label: 'User' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+            { key: 'current_plan', label: 'Plan' }, { key: 'balance_tokens', label: 'Balance', render: r => Number(r.balance_tokens).toLocaleString() },
+            { key: 'total_spent_tokens', label: 'Spent', render: r => Number(r.total_spent_tokens).toLocaleString() },
+          ]} /></div>
+        </>
+      );
+    }
+    if (section === 'wallets') return <Table rows={data.wallets} columns={[
+      { key: 'FullName', label: 'User' }, { key: 'Email', label: 'Email' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+      { key: 'current_plan', label: 'Plan' }, { key: 'balance_tokens', label: 'Balance', render: r => Number(r.balance_tokens).toLocaleString() },
+      { key: 'total_earned_tokens', label: 'Earned', render: r => Number(r.total_earned_tokens).toLocaleString() },
+      { key: 'total_spent_tokens', label: 'Spent', render: r => Number(r.total_spent_tokens).toLocaleString() },
+      { key: 'actions', label: 'Actions', render: r => <button style={st.primary} onClick={() => {
+        const raw = window.prompt('Add/remove tokens. Use negative number to remove.');
+        if (!raw) return;
+        const reason = window.prompt('Reason for adjustment?');
+        if (!reason) return;
+        run(async () => { await API.patch(`/admin/wallets/${r.UserID}/adjust`, { amount_tokens: Number(raw), reason }); return 'Wallet adjusted.'; });
+      }}>Adjust</button> },
+    ]} />;
+    if (section === 'token-purchases') return (
+      <>
+        <div style={st.warning}>Demo payment mode active — purchases are sandbox records only.</div>
+        <Table rows={data.purchases} columns={[
+          { key: 'FullName', label: 'User' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+          { key: 'plan_name', label: 'Plan' }, { key: 'price_pkr', label: 'PKR', render: r => Number(r.price_pkr).toLocaleString() },
+          { key: 'tokens', label: 'Tokens', render: r => Number(r.tokens).toLocaleString() }, { key: 'payment_method_demo', label: 'Method' },
+          { key: 'status', label: 'Status', render: r => <Badge>{r.status}</Badge> }, { key: 'demo_transaction_id', label: 'Demo ID' },
+          { key: 'created_at', label: 'Date', render: r => new Date(r.created_at).toLocaleString() },
+        ]} />
+      </>
+    );
+    if (section === 'token-transactions') return <Table rows={data.transactions} columns={[
+      { key: 'FullName', label: 'User' }, { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
+      { key: 'type', label: 'Type', render: r => <Badge>{r.type}</Badge> }, { key: 'amount_tokens', label: 'Tokens', render: r => Number(r.amount_tokens).toLocaleString() },
+      { key: 'reason', label: 'Reason' }, { key: 'balance_after', label: 'Balance', render: r => Number(r.balance_after).toLocaleString() },
+      { key: 'created_at', label: 'Date', render: r => new Date(r.created_at).toLocaleString() },
+    ]} />;
     if (section === 'users') return <Table rows={data.users} columns={[
       { key: 'FullName', label: 'Name' }, { key: 'Email', label: 'Email' },
       { key: 'Role', label: 'Role', render: r => <Badge>{r.Role}</Badge> },
@@ -263,5 +316,6 @@ const st = {
   actions: { display: 'flex', gap: 6, flexWrap: 'wrap' },
   empty: { color: '#666', padding: 24 },
   toast: { position: 'fixed', right: 24, bottom: 24, background: '#211608', border: '1px solid #f59e0b44', color: '#fbbf24', borderRadius: 10, padding: '12px 16px', fontWeight: 700 },
+  warning: { background: '#1c1207', border: '1px solid #78350f', color: '#fbbf24', borderRadius: 10, padding: '11px 13px', marginBottom: 14, fontWeight: 800 },
   link: { color: '#f59e0b' },
 };

@@ -4,11 +4,11 @@
 
 const { admin } = require('../../config/firebase');
 const { sql, poolPromise } = require('../../config/db');
+const { ensureWallet } = require('../wallet/walletModel');
 const {
   findUserByEmail,
   createUser,
   updateProfilePic,
-  createWallet,
   createStudentProfile,
   createClientProfile,
 } = require('./authModel');
@@ -65,8 +65,8 @@ const register = async (req, res) => {
       await updateProfilePic(email, profilePicUrl);
     }
 
-    // --- create wallet for this user ---
-    await createWallet(userID);
+    // --- create token wallet for this user ---
+    await ensureWallet(userID);
 
     // --- create role-specific profile ---
     if (role === 'student') {

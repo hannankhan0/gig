@@ -8,6 +8,7 @@ import { signOut } from 'firebase/auth';
 import GigWorkModal from '../components/GigWorkModal';
 import GigDetailModal from '../components/GigDetailModal';
 import ApplicationDetailModal from '../components/ApplicationDetailModal';
+import TokenBalanceCard from '../components/TokenBalanceCard';
 
 
 // ── Inline card countdown ─────────────────────────────────────────────────────
@@ -205,7 +206,11 @@ export default function StudentDashboard() {
       const appsRes = await API.get('/gigs/applications/mine');
       setMyApplications(appsRes.data.applications);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to apply.', false);
+      const data = err.response?.data;
+      showToast(data?.message || data?.error || 'Failed to apply.', false);
+      if (data?.code === 'INSUFFICIENT_TOKENS' && window.confirm('Insufficient tokens. Open billing to buy a plan?')) {
+        navigate('/billing');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -253,6 +258,7 @@ export default function StudentDashboard() {
           </div>
           <button onClick={() => navigate("/leaderboard")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px" }}>🏆 Leaderboard</button>
           <button onClick={() => navigate("/messages")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>Messages</button>
+          <button onClick={() => navigate("/billing")} style={{ background: "transparent", border: "1px solid #f59e0b44", color: "#f59e0b", borderRadius: "8px", padding: "7px 14px", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>Tokens</button>
           <button style={st.signOutBtn} onClick={handleSignOut}>Sign out</button>
         </div>
       </nav>
@@ -287,6 +293,9 @@ export default function StudentDashboard() {
       )}
 
       <div style={st.body}>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <TokenBalanceCard />
+        </div>
         {/* LEFT: Matched Gigs */}
         <div style={st.col}>
           <div style={st.sectionHeader}>

@@ -3,9 +3,11 @@
 // Displays full gig info + apply button inline.
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 
 export default function GigDetailModal({ gig, alreadyApplied, onClose, onApplied }) {
+  const navigate = useNavigate();
   const [coverLetter, setCoverLetter] = useState('');
   const [submitting,  setSubmitting]  = useState(false);
   const [error,       setError]       = useState('');
@@ -30,7 +32,11 @@ export default function GigDetailModal({ gig, alreadyApplied, onClose, onApplied
       setSuccess(`Application submitted! Match score: ${res.data.matchScore}%`);
       if (onApplied) onApplied();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to submit application.');
+      const data = err.response?.data;
+      setError(data?.message || data?.error || 'Failed to submit application.');
+      if (data?.code === 'INSUFFICIENT_TOKENS' && window.confirm('Insufficient tokens. Open billing to buy a plan?')) {
+        navigate('/billing');
+      }
     } finally {
       setSubmitting(false);
     }

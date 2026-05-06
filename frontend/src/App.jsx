@@ -9,6 +9,8 @@ import StudentProfilePage  from './pages/Studentprofilepage';
 import LeaderboardPage     from './pages/LeaderboardPage';
 import ChatPage            from './pages/ChatPage';
 import AdminPanel          from './pages/AdminPanel';
+import BillingPage         from './pages/BillingPage';
+import CheckoutPage        from './pages/CheckoutPage';
 
 // ── loading screen ────────────────────────────────────────────────────────────
 function LoadingScreen() {
@@ -80,6 +82,14 @@ export default function App() {
 
           <Route path="/messages" element={
             <ProtectedRoute><ChatPage /></ProtectedRoute>
+          } />
+
+          <Route path="/billing" element={
+            <ProtectedRoute><BillingPage /></ProtectedRoute>
+          } />
+
+          <Route path="/payment/checkout/:planId" element={
+            <ProtectedRoute><CheckoutPage /></ProtectedRoute>
           } />
 
           <Route path="/admin" element={

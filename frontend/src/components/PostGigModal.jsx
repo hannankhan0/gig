@@ -1,11 +1,13 @@
 // src/components/PostGigModal.jsx
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 
 const CATEGORIES = ['Development', 'Design', 'Writing', 'Data', 'Marketing', 'Video', 'Other'];
 const TODAY = new Date().toISOString().split('T')[0]; // FIX: min date for deadline
 
 export default function PostGigModal({ onClose, onSuccess, editGig }) {
+  const navigate = useNavigate();
   // editGig is passed when editing an existing gig — null when creating new
   const isEdit = Boolean(editGig);
 
@@ -14,6 +16,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
     category: '', requiredSkills: '',
   });
   const [error,      setError]      = useState('');
+  const [needsTokens, setNeedsTokens] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // pre-fill form if editing
@@ -50,6 +53,7 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
       return;
     }
     setError('');
+    setNeedsTokens(false);
     setSubmitting(true);
     try {
       const payload = {
@@ -66,7 +70,9 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
         : await API.post('/gigs', payload);
       await onSuccess?.(res.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to save gig. Please try again.');
+      const data = err.response?.data;
+      setNeedsTokens(data?.code === 'INSUFFICIENT_TOKENS');
+      setError(data?.message || data?.error || 'Failed to save gig. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -153,6 +159,11 @@ export default function PostGigModal({ onClose, onSuccess, editGig }) {
         </div>
 
         {error && <p style={styles.error}>{error}</p>}
+        {needsTokens && (
+          <button style={{ ...styles.submitBtn, margin: '0 24px 12px' }} onClick={() => navigate('/billing')}>
+            Buy Tokens
+          </button>
+        )}
 
         <div style={styles.footer}>
           <button style={styles.cancelBtn} onClick={onClose}>Cancel</button>

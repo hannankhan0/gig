@@ -186,6 +186,56 @@ const createReport = async (req, res) => {
   }
 };
 
+const walletOverview = async (req, res) => {
+  try {
+    ok(res, await adminModel.getWalletOverview());
+  } catch (err) {
+    console.error('wallet overview error:', err.message);
+    res.status(500).json({ error: 'could not load wallet overview.' });
+  }
+};
+
+const wallets = async (req, res) => {
+  try {
+    ok(res, { wallets: await adminModel.listWallets(req.query) });
+  } catch (err) {
+    console.error('wallets error:', err.message);
+    res.status(500).json({ error: 'could not load wallets.' });
+  }
+};
+
+const tokenPurchases = async (req, res) => {
+  try {
+    ok(res, { purchases: await adminModel.listTokenPurchases(req.query) });
+  } catch (err) {
+    console.error('token purchases error:', err.message);
+    res.status(500).json({ error: 'could not load token purchases.' });
+  }
+};
+
+const tokenTransactions = async (req, res) => {
+  try {
+    ok(res, { transactions: await adminModel.listTokenTransactions(req.query) });
+  } catch (err) {
+    console.error('token transactions error:', err.message);
+    res.status(500).json({ error: 'could not load token transactions.' });
+  }
+};
+
+const adjustWallet = async (req, res) => {
+  try {
+    const amount = Number(req.body.amount_tokens);
+    const reason = req.body.reason?.trim();
+    if (!Number.isInteger(amount) || amount === 0) return res.status(400).json({ error: 'amount_tokens must be a non-zero integer.' });
+    if (!reason) return res.status(400).json({ error: 'reason is required.' });
+    await adminModel.adjustWallet(req.user.id, Number(req.params.userId), amount, reason);
+    ok(res, { message: 'wallet adjusted.' });
+  } catch (err) {
+    console.error('adjust wallet error:', err.message);
+    res.status(err.status || 500).json({ error: err.message || 'could not adjust wallet.' });
+  }
+};
+
 module.exports = {
   stats,
   users,
@@ -204,4 +254,9 @@ module.exports = {
   hideReview,
   restoreReview,
   createReport,
+  walletOverview,
+  wallets,
+  tokenPurchases,
+  tokenTransactions,
+  adjustWallet,
 };
