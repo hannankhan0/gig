@@ -1,4 +1,3 @@
-// src/pages/AuthPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -22,42 +21,41 @@ const UNIVERSITIES = [
 function getPasswordStrength(pass) {
   if (!pass) return { score: 0, label: '', color: '' };
   let score = 0;
-  if (pass.length >= 8)             score++;
-  if (/[a-z]/.test(pass))          score++;
-  if (/[A-Z]/.test(pass))          score++;
-  if (/[0-9]/.test(pass))          score++;
+  if (pass.length >= 8) score++;
+  if (/[a-z]/.test(pass)) score++;
+  if (/[A-Z]/.test(pass)) score++;
+  if (/[0-9]/.test(pass)) score++;
   if (/[^a-zA-Z0-9\s]/.test(pass)) score++;
-  if (score <= 2) return { score, label: 'Weak',   color: '#f87171' };
-  if (score === 3) return { score, label: 'Fair',   color: '#fbbf24' };
-  if (score === 4) return { score, label: 'Good',   color: '#34d399' };
-  return              { score, label: 'Strong', color: '#4ade80' };
+  if (score <= 2) return { score, label: 'Weak', color: '#f87171' };
+  if (score === 3) return { score, label: 'Fair', color: '#fbbf24' };
+  if (score === 4) return { score, label: 'Good', color: '#34d399' };
+  return { score, label: 'Strong', color: '#4ade80' };
 }
 
 export default function AuthPage() {
-  const navigate                           = useNavigate();
+  const navigate = useNavigate();
   const { setUser, manualLoginInProgressRef: manualLoginInProgress } = useAuth();
 
-  const [tab,        setTab]        = useState('signin');
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState('');
-  const [success,    setSuccess]    = useState('');
-  const [showPass,   setShowPass]   = useState(false);
+  const [tab, setTab] = useState('signin');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
 
   const [siEmail, setSiEmail] = useState('');
-  const [siPass,  setSiPass]  = useState('');
+  const [siPass, setSiPass] = useState('');
 
-  const [role,       setRole]       = useState('student');
-  const [firstName,  setFirstName]  = useState('');
-  const [lastName,   setLastName]   = useState('');
-  const [suEmail,    setSuEmail]    = useState('');
+  const [role, setRole] = useState('student');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [suEmail, setSuEmail] = useState('');
   const [university, setUniversity] = useState('');
-  const [suPass,     setSuPass]     = useState('');
-  const [phone,      setPhone]      = useState('');
+  const [suPass, setSuPass] = useState('');
+  const [phone, setPhone] = useState('');
 
   const clear = () => { setError(''); setSuccess(''); };
 
-  // ── SIGN IN ───────────────────────────────────────────────────────────────
   const handleSignIn = async (e) => {
     e.preventDefault(); clear();
     setLoading(true);
@@ -86,17 +84,16 @@ export default function AuthPage() {
       localStorage.setItem('gg_user', JSON.stringify(res.data.user));
       navigate('/dashboard');
     } catch (err) {
-      if (err.code === 'auth/invalid-credential')     setError('Wrong email or password.');
-      else if (err.code === 'auth/user-not-found')    setError('No account found with this email.');
+      if (err.code === 'auth/invalid-credential') setError('Wrong email or password.');
+      else if (err.code === 'auth/user-not-found') setError('No account found with this email.');
       else if (err.code === 'auth/too-many-requests') setError('Too many failed attempts. Try again later.');
-      else if (err.response?.data?.error)             setError(err.response.data.error);
+      else if (err.response?.data?.error) setError(err.response.data.error);
       else setError('Something went wrong. Please try again.');
     }
     setLoading(false);
     manualLoginInProgress.current = false;
   };
 
-  // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
   const handleForgot = async (e) => {
     e.preventDefault(); clear();
     if (!siEmail) { setError('Please enter your email address.'); return; }
@@ -110,14 +107,13 @@ export default function AuthPage() {
     setLoading(false);
   };
 
-  // ── SIGN UP ───────────────────────────────────────────────────────────────
   const handleSignUp = async (e) => {
     e.preventDefault(); clear();
 
-    if (firstName.trim().length < 2)       { setError('First name must be at least 2 characters.'); return; }
-    if (lastName.trim().length < 2)        { setError('Last name must be at least 2 characters.'); return; }
-    if (!/^[a-zA-Z\s]+$/.test(firstName))  { setError('First name can only contain letters.'); return; }
-    if (!/^[a-zA-Z\s]+$/.test(lastName))   { setError('Last name can only contain letters.'); return; }
+    if (firstName.trim().length < 2) { setError('First name must be at least 2 characters.'); return; }
+    if (lastName.trim().length < 2) { setError('Last name must be at least 2 characters.'); return; }
+    if (!/^[a-zA-Z\s]+$/.test(firstName)) { setError('First name can only contain letters.'); return; }
+    if (!/^[a-zA-Z\s]+$/.test(lastName)) { setError('Last name can only contain letters.'); return; }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(suEmail)) { setError('Please enter a valid email address.'); return; }
@@ -130,12 +126,12 @@ export default function AuthPage() {
       setError('Phone must be exactly 11 digits starting with 03.'); return;
     }
     if (role === 'student' && !university) { setError('Please select your university.'); return; }
-    if (suPass.length < 8)                { setError('Password must be at least 8 characters.'); return; }
-    if (!/[a-z]/.test(suPass))            { setError('Password must contain at least one lowercase letter.'); return; }
-    if (!/[A-Z]/.test(suPass))            { setError('Password must contain at least one uppercase letter.'); return; }
-    if (!/[0-9]/.test(suPass))            { setError('Password must contain at least one number.'); return; }
-    if (!/[^a-zA-Z0-9\s]/.test(suPass))   { setError('Password must contain at least one special character (e.g. !@#$).'); return; }
-    if (/\s/.test(suPass))                { setError('Password cannot contain spaces.'); return; }
+    if (suPass.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    if (!/[a-z]/.test(suPass)) { setError('Password must contain at least one lowercase letter.'); return; }
+    if (!/[A-Z]/.test(suPass)) { setError('Password must contain at least one uppercase letter.'); return; }
+    if (!/[0-9]/.test(suPass)) { setError('Password must contain at least one number.'); return; }
+    if (!/[^a-zA-Z0-9\s]/.test(suPass)) { setError('Password must contain at least one special character (e.g. !@#$).'); return; }
+    if (/\s/.test(suPass)) { setError('Password cannot contain spaces.'); return; }
 
     setLoading(true);
     try {
@@ -143,10 +139,10 @@ export default function AuthPage() {
       await sendEmailVerification(cred.user);
 
       const form = new FormData();
-      form.append('fullName',   `${firstName.trim()} ${lastName.trim()}`);
-      form.append('phone',      phone.trim());
+      form.append('fullName', `${firstName.trim()} ${lastName.trim()}`);
+      form.append('phone', phone.trim());
       form.append('university', university);
-      form.append('role',       role);
+      form.append('role', role);
 
       await API.post('/auth/register', form);
       await signOut(auth);
@@ -156,21 +152,19 @@ export default function AuthPage() {
       setSiEmail(suEmail);
       setFirstName(''); setLastName(''); setSuEmail('');
       setUniversity(''); setSuPass(''); setPhone('');
-
     } catch (err) {
       if (auth.currentUser) {
         try { await auth.currentUser.delete(); } catch { /* ignore */ }
       }
       if (err.code === 'auth/email-already-in-use') setError('Email already registered. Please sign in.');
-      else if (err.code === 'auth/invalid-email')   setError('Invalid email format.');
-      else if (err.code === 'auth/weak-password')   setError('Password is too weak.');
-      else if (err.response?.data?.error)           setError(err.response.data.error);
+      else if (err.code === 'auth/invalid-email') setError('Invalid email format.');
+      else if (err.code === 'auth/weak-password') setError('Password is too weak.');
+      else if (err.response?.data?.error) setError(err.response.data.error);
       else setError('Something went wrong. Please try again.');
     }
     setLoading(false);
   };
 
-  // ── GOOGLE ────────────────────────────────────────────────────────────────
   const handleGoogle = async () => {
     clear();
     setLoading(true);
@@ -187,7 +181,7 @@ export default function AuthPage() {
       } catch (err) {
         if (err.response?.status === 404) {
           localStorage.setItem('gg_google_signup', JSON.stringify({
-            email:    auth.currentUser.email,
+            email: auth.currentUser.email,
             fullName: auth.currentUser.displayName || '',
           }));
           navigate('/complete-profile');
@@ -221,337 +215,447 @@ export default function AuthPage() {
   };
 
   const passChecks = [
-    { check: suPass.length >= 8,                  label: '8+ chars'     },
-    { check: /[a-z]/.test(suPass),               label: 'Lowercase'    },
-    { check: /[A-Z]/.test(suPass),               label: 'Uppercase'    },
-    { check: /[0-9]/.test(suPass),               label: 'Number'       },
-    { check: /[^a-zA-Z0-9\s]/.test(suPass),      label: 'Symbol (!@#)' },
+    { check: suPass.length >= 8, label: '8+ chars' },
+    { check: /[a-z]/.test(suPass), label: 'Lowercase' },
+    { check: /[A-Z]/.test(suPass), label: 'Uppercase' },
+    { check: /[0-9]/.test(suPass), label: 'Number' },
+    { check: /[^a-zA-Z0-9\s]/.test(suPass), label: 'Symbol' },
     { check: !/\s/.test(suPass) && suPass.length > 0, label: 'No spaces' },
   ];
 
   const strength = getPasswordStrength(suPass);
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#0f0f0f' }}>
+    <div style={st.page}>
+      <style>{`
+        .gg-auth-hero-panel { grid-template-columns: minmax(0, 1.03fr) minmax(340px, 0.97fr); }
+        .gg-auth-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .gg-auth-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gg-auth-features { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .gg-auth-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gg-auth-two-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        @media (max-width: 980px) {
+          .gg-auth-hero-panel { grid-template-columns: 1fr !important; min-height: auto !important; }
+          .gg-auth-mockup { min-height: 390px !important; }
+          .gg-auth-features { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 680px) {
+          .gg-auth-nav-links a { display: none !important; }
+          .gg-auth-stats,
+          .gg-auth-steps,
+          .gg-auth-features,
+          .gg-auth-roles,
+          .gg-auth-two-fields { grid-template-columns: 1fr !important; }
+          .gg-auth-mockup { min-height: 330px !important; transform: scale(0.92); transform-origin: top center; }
+        }
+      `}</style>
+      <div style={st.bgGlowOne} />
+      <div style={st.bgGlowTwo} />
 
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12"
-        style={{ background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1200 50%, #0f0f0f 100%)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            style={{ background: '#f59e0b' }}>🎓</div>
-          <span className="text-xl font-bold tracking-tight">
-            Grade<span style={{ color: '#f59e0b' }}>&</span>Grind
-          </span>
+      <nav style={st.nav}>
+        <div style={st.logo}>
+          <span style={st.logoMark}>G&G</span>
+          <span>Grade &amp; Grind</span>
         </div>
-        <div>
-          <div className="inline-block px-4 py-2 rounded-full text-xs font-semibold tracking-widest mb-8"
-            style={{ border: '1px solid #444', color: '#aaa' }}>
-            STUDENT FREELANCING
-          </div>
-          <h1 className="text-6xl font-black leading-none mb-6" style={{ letterSpacing: '-0.02em' }}>
-            Turn your<br />skills into<br />
-            <span style={{ color: '#f59e0b' }}>income.</span>
-          </h1>
-          <p className="text-lg leading-relaxed max-w-md" style={{ color: '#888' }}>
-            Pakistan's first freelancing platform built exclusively for
-            university students. Find gigs, build your portfolio, and
-            get paid all around your schedule.
-          </p>
+        <div className="gg-auth-nav-links" style={st.navLinks}>
+          <a href="#how" style={st.navLink}>How it works</a>
+          <a href="#features" style={st.navLink}>Features</a>
+          <button type="button" onClick={() => { setTab('signin'); setForgotMode(false); clear(); }} style={st.navGhost}>Login</button>
+          <button type="button" onClick={() => { setTab('signup'); setForgotMode(false); clear(); }} style={st.navCta}>Sign up</button>
         </div>
-        <div className="flex gap-12">
-          {[
-            { value: '2.4k+', label: 'Active Students' },
-            { value: '850+',  label: 'Gigs Posted' },
-            { value: '98%',   label: 'Satisfaction' },
-          ].map(s => (
-            <div key={s.label}>
-              <div className="text-3xl font-black" style={{ color: '#f59e0b' }}>{s.value}</div>
-              <div className="text-sm mt-1" style={{ color: '#666' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      </nav>
 
-      {/* RIGHT PANEL */}
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto"
-        style={{ background: '#111111' }}>
-        <div className="w-full max-w-md py-8">
-
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-black mb-2"
-              style={{ color: '#222', WebkitTextStroke: '1px #444', letterSpacing: '-0.02em' }}>
-              {tab === 'signin' ? 'Welcome back.' : 'Join the grind.'}
-            </h2>
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>
-              {tab === 'signin'
-                ? 'Sign in to your Grade and Grind account'
-                : 'Create your free student or client account'}
+      <main style={st.main}>
+        <section className="gg-auth-hero-panel" style={st.heroPanel}>
+          <div style={st.heroCopy}>
+            <div style={st.eyebrow}>University freelance marketplace</div>
+            <h1 style={st.heroTitle}>Turn Student Skills Into Paid Opportunities</h1>
+            <p style={st.heroText}>
+              Grade &amp; Grind connects university students with clients who need fast,
+              affordable, skill-based freelance work.
             </p>
+            <div style={st.heroActions}>
+              <button type="button" onClick={() => { setTab('signup'); clear(); }} style={st.primaryBtn}>Get Started</button>
+              <a href="#how" style={st.secondaryBtn}>How It Works</a>
+            </div>
+            <div className="gg-auth-stats" style={st.statsGrid}>
+              {[
+                ['1,200+', 'Students'],
+                ['300+', 'Active Gigs'],
+                ['2,000+', 'Applications'],
+                ['4.8', 'Avg Rating'],
+              ].map(([value, label]) => (
+                <div key={label} style={st.stat}>
+                  <strong>{value}</strong>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* TABS */}
-          <div className="flex rounded-2xl p-1 mb-8 gap-1"
-            style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+          <div className="gg-auth-mockup" style={st.mockupWrap}>
+            <div style={st.mockupCardMain}>
+              <div style={st.mockupTop}>
+                <span style={st.pill}>Open Gig</span>
+                <span style={st.price}>PKR 18,000</span>
+              </div>
+              <h3 style={st.mockupTitle}>Build a React Dashboard</h3>
+              <p style={st.mockupText}>Matched with 12 student developers from FAST, NUST, and LUMS.</p>
+              <div style={st.progressTrack}><div style={st.progressFill} /></div>
+            </div>
+            <div style={st.floatingCardOne}>
+              <span style={st.avatar}>SA</span>
+              <div>
+                <strong>Sadeem Arshad</strong>
+                <p>96% skill match</p>
+              </div>
+            </div>
+            <div style={st.floatingCardTwo}>
+              <span>Token Balance</span>
+              <strong>8,750</strong>
+            </div>
+            <div style={st.floatingCardThree}>
+              <span>Application</span>
+              <strong>Accepted</strong>
+            </div>
+          </div>
+        </section>
+
+        <section id="how" style={st.section}>
+          <div style={st.sectionHeader}>
+            <span style={st.eyebrow}>Simple workflow</span>
+            <h2 style={st.sectionTitle}>Built for clients and students</h2>
+          </div>
+          <div className="gg-auth-steps" style={st.stepsGrid}>
+            <RoleFlow title="For Clients" steps={['Post a gig', 'Review student applications', 'Chat and hire', 'Complete project']} />
+            <RoleFlow title="For Students" steps={['Build profile', 'Apply to gigs', 'Communicate with clients', 'Earn and grow reputation']} />
+          </div>
+        </section>
+
+        <section id="features" style={st.section}>
+          <div style={st.sectionHeader}>
+            <span style={st.eyebrow}>Platform tools</span>
+            <h2 style={st.sectionTitle}>Everything needed to run real project work</h2>
+          </div>
+          <div className="gg-auth-features" style={st.featureGrid}>
+            {[
+              ['Skill-based gig matching', 'Students discover gigs aligned with their profile and strengths.'],
+              ['Real-time chat', 'Clients and students coordinate project details in one place.'],
+              ['Token-based access', 'Clear usage model for applications, posting, and premium actions.'],
+              ['Reviews and ratings', 'Reputation grows with completed work and quality feedback.'],
+              ['Student leaderboard', 'High-performing students get stronger platform visibility.'],
+              ['Admin moderation', 'Platform controls keep users, gigs, chats, and reports manageable.'],
+            ].map(([title, text]) => (
+              <div key={title} style={st.featureCard}>
+                <div style={st.featureIcon}>{title.slice(0, 2).toUpperCase()}</div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="gg-auth-roles" style={st.roleCards}>
+          <AudienceCard title="For Students" text="Find paid work, build a portfolio, and create a trusted university freelance reputation." onClick={() => { setRole('student'); setTab('signup'); clear(); }} />
+          <AudienceCard title="For Clients" text="Post affordable projects, compare student applicants, chat, and hire quickly." onClick={() => { setRole('client'); setTab('signup'); clear(); }} />
+        </section>
+
+        <section style={st.finalCta}>
+          <h2>Ready to start your first gig?</h2>
+          <p>Create an account and start using Grade &amp; Grind today.</p>
+          <button type="button" onClick={() => { setTab('signup'); clear(); }} style={st.primaryBtn}>Create Account</button>
+        </section>
+      </main>
+
+      <aside style={st.authRail}>
+        <div style={st.authCard}>
+          <div style={st.authHeader}>
+            <div>
+              <span style={st.eyebrow}>{tab === 'signin' ? 'Welcome back' : 'Create account'}</span>
+              <h2>{tab === 'signin' ? 'Sign in to continue' : 'Join Grade & Grind'}</h2>
+            </div>
+          </div>
+
+          <div style={st.tabs}>
             {['signin', 'signup'].map(t => (
-              <button key={t}
+              <button
+                key={t}
+                type="button"
                 onClick={() => { setTab(t); clear(); setForgotMode(false); }}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                style={{ background: tab === t ? '#f59e0b' : 'transparent', color: tab === t ? '#000' : '#666' }}>
-                {t === 'signin' ? 'Sign In' : 'Create Account'}
+                style={{ ...st.tab, ...(tab === t ? st.tabActive : {}) }}
+              >
+                {t === 'signin' ? 'Sign In' : 'Sign Up'}
               </button>
             ))}
           </div>
 
-          {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl text-sm"
-              style={{ background: '#ff5e7815', border: '1px solid #ff5e7840', color: '#ff8090' }}>
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-4 px-4 py-3 rounded-xl text-sm"
-              style={{ background: '#22d3a515', border: '1px solid #22d3a540', color: '#22d3a5' }}>
-              {success}
-            </div>
-          )}
+          {error && <div style={st.error}>{error}</div>}
+          {success && <div style={st.success}>{success}</div>}
 
-          {/* SIGN IN FORM */}
-          {tab === 'signin' && (
-            <form onSubmit={forgotMode ? handleForgot : handleSignIn}>
-              {forgotMode && (
-                <p className="text-sm mb-4" style={{ color: '#888' }}>
-                  Enter your email and we will send a password reset link.
-                </p>
-              )}
-              <div className="mb-4">
-                <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>
-                  EMAIL ADDRESS
-                </label>
-                <InputField type="email" value={siEmail} onChange={e => setSiEmail(e.target.value)}
-                  placeholder="you@university.edu.pk" required />
-              </div>
+          {tab === 'signin' ? (
+            <form onSubmit={forgotMode ? handleForgot : handleSignIn} style={st.form}>
+              {forgotMode && <p style={st.formNote}>Enter your email and we will send a password reset link.</p>}
+              <Field label="Email Address">
+                <InputField type="email" value={siEmail} onChange={e => setSiEmail(e.target.value)} placeholder="you@university.edu.pk" required />
+              </Field>
               {!forgotMode && (
-                <div className="mb-2">
-                  <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>
-                    PASSWORD
-                  </label>
-                  <div className="relative">
-                    <InputField type={showPass ? 'text' : 'password'}
-                      value={siPass} onChange={e => setSiPass(e.target.value)}
-                      placeholder="Enter your password" required />
-                    <button type="button" onClick={() => setShowPass(!showPass)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-lg" style={{ color: '#555' }}>
-                      {showPass ? '🙈' : '👁'}
-                    </button>
-                  </div>
-                </div>
+                <Field label="Password">
+                  <PasswordWrap show={showPass} onToggle={() => setShowPass(!showPass)}>
+                    <InputField type={showPass ? 'text' : 'password'} value={siPass} onChange={e => setSiPass(e.target.value)} placeholder="Enter your password" required />
+                  </PasswordWrap>
+                </Field>
               )}
               {!forgotMode && (
-                <div className="text-right mb-6">
-                  <button type="button" onClick={() => { setForgotMode(true); clear(); }}
-                    className="text-xs font-semibold" style={{ color: '#f59e0b' }}>
-                    Forgot password?
-                  </button>
-                </div>
+                <button type="button" onClick={() => { setForgotMode(true); clear(); }} style={st.textButton}>Forgot password?</button>
               )}
-              <button type="submit" disabled={loading}
-                className="w-full py-4 rounded-xl font-bold text-base mb-4 transition-all"
-                style={{ background: '#f59e0b', color: '#000', opacity: loading ? 0.8 : 1 }}>
+              <button type="submit" disabled={loading} style={st.submitBtn}>
                 {loading ? 'Please wait...' : forgotMode ? 'Send Reset Link' : 'Sign In'}
               </button>
               {forgotMode ? (
-                <button type="button" onClick={() => { setForgotMode(false); clear(); }}
-                  className="w-full py-3 rounded-xl text-sm font-medium"
-                  style={{ background: 'transparent', border: '1px solid #2a2a2a', color: '#666' }}>
-                  Back to Sign In
-                </button>
+                <button type="button" onClick={() => { setForgotMode(false); clear(); }} style={st.outlineBtn}>Back to Sign In</button>
               ) : (
                 <>
                   <Divider />
                   <GoogleBtn onClick={handleGoogle} loading={loading} />
-                  <button type="button" onClick={handleDevAdmin} disabled={loading}
-                    className="w-full py-3 rounded-xl text-sm font-semibold mt-3"
-                    style={{ background: '#1a1200', border: '1px solid #f59e0b44', color: '#f59e0b' }}>
-                    Local Admin Login
-                  </button>
+                  <button type="button" onClick={handleDevAdmin} disabled={loading} style={st.adminBtn}>Local Admin Login</button>
                 </>
               )}
             </form>
-          )}
-
-          {/* SIGN UP FORM */}
-          {tab === 'signup' && (
-            <form onSubmit={handleSignUp}>
-              {/* role selector */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
+          ) : (
+            <form onSubmit={handleSignUp} style={st.form}>
+              <div style={st.roleGrid}>
                 {[
-                  { value: 'student', icon: '🎓', title: 'Student', desc: 'Find and complete gigs' },
-                  { value: 'client',  icon: '💼', title: 'Client',  desc: 'Post gigs and hire' },
+                  { value: 'student', title: 'Student', desc: 'Find and complete gigs' },
+                  { value: 'client', title: 'Client', desc: 'Post gigs and hire' },
                 ].map(r => (
-                  <button key={r.value} type="button" onClick={() => setRole(r.value)}
-                    className="p-4 rounded-2xl text-center transition-all duration-200"
-                    style={{
-                      background: role === r.value ? '#1a1200' : '#1a1a1a',
-                      border: `1px solid ${role === r.value ? '#f59e0b' : '#2a2a2a'}`,
-                    }}>
-                    <div className="text-2xl mb-2">{r.icon}</div>
-                    <div className="font-bold text-sm" style={{ color: role === r.value ? '#f59e0b' : '#fff' }}>
-                      {r.title}
-                    </div>
-                    <div className="text-xs mt-1" style={{ color: '#666' }}>{r.desc}</div>
+                  <button key={r.value} type="button" onClick={() => setRole(r.value)} style={{ ...st.roleBtn, ...(role === r.value ? st.roleActive : {}) }}>
+                    <strong>{r.title}</strong>
+                    <span>{r.desc}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div>
-                  <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>FIRST NAME</label>
+              <div className="gg-auth-two-fields" style={st.twoFields}>
+                <Field label="First Name">
                   <InputField value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Ali" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>LAST NAME</label>
+                </Field>
+                <Field label="Last Name">
                   <InputField value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Khan" required />
-                </div>
+                </Field>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>
-                  {role === 'student' ? 'UNIVERSITY EMAIL' : 'EMAIL ADDRESS'}
-                </label>
-                <InputField type="email" value={suEmail} onChange={e => setSuEmail(e.target.value)}
-                  placeholder={role === 'student' ? 'you@lhr.nu.edu.pk' : 'you@company.com'} required />
-              </div>
+              <Field label={role === 'student' ? 'University Email' : 'Email Address'}>
+                <InputField type="email" value={suEmail} onChange={e => setSuEmail(e.target.value)} placeholder={role === 'student' ? 'you@lhr.nu.edu.pk' : 'you@company.com'} required />
+              </Field>
 
               {role === 'student' && (
                 <>
-                  <div className="mb-4">
-                    <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>UNIVERSITY</label>
-                    <select value={university} onChange={e => setUniversity(e.target.value)} required
-                      className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                      style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: university ? '#fff' : '#555' }}>
+                  <Field label="University">
+                    <select value={university} onChange={e => setUniversity(e.target.value)} required style={st.input}>
                       <option value="" disabled>Select your university</option>
-                      {UNIVERSITIES.map(u => (
-                        <option key={u} value={u} style={{ background: '#1a1a1a' }}>{u}</option>
-                      ))}
+                      {UNIVERSITIES.map(u => <option key={u} value={u} style={{ background: '#151a21' }}>{u}</option>)}
                     </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>
-                      PHONE <span style={{ color: '#444', fontWeight: 400 }}>(OPTIONAL)</span>
-                    </label>
+                  </Field>
+                  <Field label="Phone (optional)">
                     <InputField value={phone} onChange={e => setPhone(e.target.value)} placeholder="03001234567" />
-                    {phone && !/^03\d{9}$/.test(phone) && (
-                      <p className="text-xs mt-1" style={{ color: '#ff8090' }}>Must be 11 digits starting with 03</p>
-                    )}
-                  </div>
+                    {phone && !/^03\d{9}$/.test(phone) && <p style={st.inputHintDanger}>Must be 11 digits starting with 03</p>}
+                  </Field>
                 </>
               )}
 
-              <div className="mb-6">
-                <label className="block text-xs font-semibold tracking-widest mb-2" style={{ color: '#555' }}>PASSWORD</label>
-                <div className="relative">
-                  <InputField type={showPass ? 'text' : 'password'}
-                    value={suPass} onChange={e => setSuPass(e.target.value)}
-                    placeholder="Min. 8 chars, uppercase, number, symbol" required />
-                  <button type="button" onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-lg" style={{ color: '#555' }}>
-                    {showPass ? '🙈' : '👁'}
-                  </button>
-                </div>
-
-                {/* PASSWORD STRENGTH METER */}
+              <Field label="Password">
+                <PasswordWrap show={showPass} onToggle={() => setShowPass(!showPass)}>
+                  <InputField type={showPass ? 'text' : 'password'} value={suPass} onChange={e => setSuPass(e.target.value)} placeholder="8+ chars, uppercase, number, symbol" required />
+                </PasswordWrap>
                 {suPass.length > 0 && (
-                  <div style={{ marginTop: '10px' }}>
-                    {/* strength bar segments */}
-                    <div style={{ display: 'flex', gap: '4px', marginBottom: '7px' }}>
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} style={{
-                          flex: 1, height: '4px', borderRadius: '2px',
-                          background: i <= strength.score ? strength.color : '#2a2a2a',
-                          transition: 'background 0.25s',
-                        }} />
-                      ))}
+                  <div style={st.strengthWrap}>
+                    <div style={st.strengthBars}>
+                      {[1, 2, 3, 4, 5].map(i => <span key={i} style={{ background: i <= strength.score ? strength.color : '#2a313b' }} />)}
                     </div>
-
-                    {/* strength label */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.72rem', color: '#555' }}>Password strength</span>
-                      {strength.label && (
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: strength.color }}>
-                          {strength.label}
-                        </span>
-                      )}
+                    <div style={st.strengthMeta}>
+                      <span>Password strength</span>
+                      <strong style={{ color: strength.color }}>{strength.label}</strong>
                     </div>
-
-                    {/* requirement chips */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                    <div style={st.checks}>
                       {passChecks.map(({ check, label }) => (
-                        <span key={label} style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '4px',
-                          padding: '3px 9px', borderRadius: '20px',
-                          fontSize: '0.69rem', fontWeight: 600,
-                          background: check ? '#22d3a512' : '#ff5e7810',
-                          color:      check ? '#22d3a5'   : '#ff8090',
-                          border:     `1px solid ${check ? '#22d3a528' : '#ff5e7820'}`,
-                          transition: 'all 0.2s',
-                        }}>
-                          <span>{check ? '✓' : '✗'}</span>
-                          {label}
-                        </span>
+                        <span key={label} style={{ ...st.check, ...(check ? st.checkOk : st.checkBad) }}>{check ? 'OK' : '--'} {label}</span>
                       ))}
                     </div>
                   </div>
                 )}
-              </div>
+              </Field>
 
-              <button type="submit" disabled={loading}
-                className="w-full py-4 rounded-xl font-bold text-base mb-4 transition-all"
-                style={{ background: '#f59e0b', color: '#000', opacity: loading ? 0.8 : 1 }}>
-                {loading ? 'Creating account...' : 'Create Account'}
-              </button>
+              <button type="submit" disabled={loading} style={st.submitBtn}>{loading ? 'Creating account...' : 'Create Account'}</button>
               <Divider />
               <GoogleBtn onClick={handleGoogle} loading={loading} />
             </form>
           )}
         </div>
-      </div>
+      </aside>
+
+      <footer style={st.footer}>
+        <strong>Grade &amp; Grind</strong>
+        <span>Student-focused freelance marketplace.</span>
+        <span>Copyright 2026 Grade &amp; Grind.</span>
+      </footer>
+    </div>
+  );
+}
+
+function RoleFlow({ title, steps }) {
+  return (
+    <div style={st.flowCard}>
+      <h3>{title}</h3>
+      {steps.map((step, i) => (
+        <div key={step} style={st.flowStep}>
+          <span>{i + 1}</span>
+          <p>{step}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AudienceCard({ title, text, onClick }) {
+  return (
+    <div style={st.audienceCard}>
+      <div style={st.featureIcon}>{title.includes('Students') ? 'ST' : 'CL'}</div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+      <button type="button" onClick={onClick} style={st.cardCta}>Create Account</button>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label style={st.field}>
+      <span>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function PasswordWrap({ children, show, onToggle }) {
+  return (
+    <div style={st.passwordWrap}>
+      {children}
+      <button type="button" onClick={onToggle} style={st.showBtn}>{show ? 'Hide' : 'Show'}</button>
     </div>
   );
 }
 
 function InputField({ type = 'text', value, onChange, placeholder, required }) {
   return (
-    <input type={type} value={value} onChange={onChange}
-      placeholder={placeholder} required={required}
-      className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-      style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#fff' }}
-      onFocus={e => e.target.style.borderColor = '#f59e0b'}
-      onBlur={e  => e.target.style.borderColor = '#2a2a2a'}
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      required={required}
+      style={st.input}
     />
   );
 }
 
 function Divider() {
   return (
-    <div className="flex items-center gap-4 my-5">
-      <div className="flex-1 h-px" style={{ background: '#2a2a2a' }} />
-      <span className="text-xs" style={{ color: '#444' }}>or continue with</span>
-      <div className="flex-1 h-px" style={{ background: '#2a2a2a' }} />
+    <div style={st.divider}>
+      <span />
+      <p>or continue with</p>
+      <span />
     </div>
   );
 }
 
 function GoogleBtn({ onClick, loading }) {
   return (
-    <button type="button" onClick={onClick} disabled={loading}
-      className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-3 transition-all"
-      style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', color: '#fff' }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = '#444'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = '#2a2a2a'}>
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-        width="18" height="18" alt="Google" />
+    <button type="button" onClick={onClick} disabled={loading} style={st.googleBtn}>
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google" />
       Continue with Google
     </button>
   );
 }
+
+const st = {
+  page: { minHeight: '100vh', background: '#080808', color: '#f9fafb', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', system-ui, sans-serif" },
+  bgGlowOne: { position: 'fixed', width: 420, height: 420, borderRadius: '50%', background: 'rgba(245,158,11,0.12)', filter: 'blur(80px)', top: -140, left: -120, pointerEvents: 'none' },
+  bgGlowTwo: { position: 'fixed', width: 460, height: 460, borderRadius: '50%', background: 'rgba(255,163,26,0.08)', filter: 'blur(90px)', right: -160, top: 220, pointerEvents: 'none' },
+  nav: { position: 'sticky', top: 0, zIndex: 20, minHeight: 74, padding: '16px clamp(18px, 4vw, 56px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(8,8,8,0.82)', backdropFilter: 'blur(18px)' },
+  logo: { display: 'flex', alignItems: 'center', gap: 11, fontWeight: 900, letterSpacing: '-0.02em' },
+  logoMark: { width: 38, height: 38, borderRadius: 12, background: '#f59e0b', color: '#080808', display: 'grid', placeItems: 'center', fontSize: '0.76rem', fontWeight: 950 },
+  navLinks: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' },
+  navLink: { color: '#9ca3af', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700 },
+  navGhost: { background: 'rgba(255,255,255,0.04)', color: '#f9fafb', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', cursor: 'pointer', fontWeight: 800 },
+  navCta: { background: '#f59e0b', color: '#080808', border: 0, borderRadius: 10, padding: '10px 15px', cursor: 'pointer', fontWeight: 900 },
+  main: { width: 'min(1180px, calc(100% - 36px))', margin: '0 auto', padding: '44px 0 72px', position: 'relative', zIndex: 1 },
+  heroPanel: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.03fr) minmax(340px, 0.97fr)', gap: 32, alignItems: 'center', minHeight: 'calc(100vh - 150px)' },
+  heroCopy: { maxWidth: 680 },
+  eyebrow: { display: 'inline-flex', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: 999, padding: '6px 11px', fontSize: '0.74rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' },
+  heroTitle: { fontSize: 'clamp(2.7rem, 7vw, 5.8rem)', lineHeight: 0.94, letterSpacing: '-0.055em', margin: '18px 0 18px', maxWidth: 760 },
+  heroText: { color: '#9ca3af', fontSize: '1.08rem', lineHeight: 1.7, maxWidth: 620 },
+  heroActions: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 26 },
+  primaryBtn: { background: '#f59e0b', color: '#080808', border: 0, borderRadius: 12, padding: '13px 18px', cursor: 'pointer', fontWeight: 950, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+  secondaryBtn: { background: 'rgba(255,255,255,0.04)', color: '#f9fafb', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '13px 18px', cursor: 'pointer', fontWeight: 850, textDecoration: 'none' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginTop: 36 },
+  stat: { background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 15 },
+  mockupWrap: { position: 'relative', minHeight: 470 },
+  mockupCardMain: { position: 'absolute', inset: '72px 34px auto 32px', minHeight: 260, background: 'linear-gradient(145deg, rgba(21,26,33,0.96), rgba(12,12,12,0.96))', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 24, padding: 24, boxShadow: '0 28px 90px rgba(0,0,0,0.46)' },
+  mockupTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  pill: { color: '#22c55e', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.26)', borderRadius: 999, padding: '6px 10px', fontSize: '0.75rem', fontWeight: 900 },
+  price: { color: '#f59e0b', fontWeight: 950 },
+  mockupTitle: { fontSize: '1.65rem', margin: '30px 0 8px', letterSpacing: '-0.03em' },
+  mockupText: { color: '#9ca3af', lineHeight: 1.55 },
+  progressTrack: { height: 10, background: '#242b35', borderRadius: 999, marginTop: 28, overflow: 'hidden' },
+  progressFill: { width: '72%', height: '100%', background: 'linear-gradient(90deg, #f59e0b, #facc15)' },
+  floatingCardOne: { position: 'absolute', left: 0, top: 10, display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(18,18,18,0.86)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 14, boxShadow: '0 18px 50px rgba(0,0,0,0.35)' },
+  floatingCardTwo: { position: 'absolute', right: 0, top: 24, background: 'rgba(18,18,18,0.86)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 16, minWidth: 150, boxShadow: '0 18px 50px rgba(0,0,0,0.35)' },
+  floatingCardThree: { position: 'absolute', right: 26, bottom: 62, background: 'rgba(18,18,18,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: 16, minWidth: 170, boxShadow: '0 18px 50px rgba(0,0,0,0.35)' },
+  avatar: { width: 42, height: 42, borderRadius: '50%', background: '#f59e0b', color: '#080808', display: 'grid', placeItems: 'center', fontWeight: 950 },
+  section: { padding: '46px 0' },
+  sectionHeader: { maxWidth: 720, marginBottom: 22 },
+  sectionTitle: { fontSize: 'clamp(1.8rem, 3vw, 2.7rem)', letterSpacing: '-0.04em', margin: '12px 0 0' },
+  stepsGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 },
+  flowCard: { background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 20 },
+  flowStep: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.06)' },
+  featureGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 14 },
+  featureCard: { background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18 },
+  featureIcon: { width: 38, height: 38, borderRadius: 12, background: 'rgba(245,158,11,0.13)', color: '#f59e0b', display: 'grid', placeItems: 'center', fontWeight: 950, marginBottom: 12, fontSize: '0.75rem' },
+  roleCards: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, padding: '30px 0' },
+  audienceCard: { background: 'linear-gradient(145deg, rgba(245,158,11,0.11), rgba(255,255,255,0.04))', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 22, padding: 24 },
+  cardCta: { background: '#f59e0b', color: '#080808', border: 0, borderRadius: 10, padding: '10px 13px', cursor: 'pointer', fontWeight: 900 },
+  finalCta: { margin: '42px 0 20px', background: '#111827', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 24, padding: '34px 24px', textAlign: 'center' },
+  authRail: { width: 'min(500px, calc(100% - 28px))', margin: '0 auto 70px', position: 'relative', zIndex: 2 },
+  authCard: { background: 'rgba(18,18,18,0.92)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 24, padding: 24, boxShadow: '0 24px 80px rgba(0,0,0,0.46)', backdropFilter: 'blur(18px)' },
+  authHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: 18 },
+  tabs: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: '#0f1115', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 5, marginBottom: 16 },
+  tab: { background: 'transparent', border: 0, color: '#9ca3af', borderRadius: 10, padding: '11px 10px', cursor: 'pointer', fontWeight: 900 },
+  tabActive: { background: '#f59e0b', color: '#080808' },
+  error: { background: 'rgba(239,68,68,0.11)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', borderRadius: 12, padding: 12, fontSize: '0.86rem', marginBottom: 12 },
+  success: { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.28)', color: '#86efac', borderRadius: 12, padding: 12, fontSize: '0.86rem', marginBottom: 12 },
+  form: { display: 'grid', gap: 13 },
+  formNote: { color: '#9ca3af', margin: 0, fontSize: '0.86rem' },
+  field: { display: 'grid', gap: 7, color: '#9ca3af', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' },
+  input: { width: '100%', background: '#151a21', border: '1px solid rgba(255,255,255,0.1)', color: '#f9fafb', borderRadius: 12, padding: '12px 13px', outline: 'none', fontSize: '0.94rem', fontFamily: 'inherit', boxSizing: 'border-box' },
+  passwordWrap: { position: 'relative' },
+  showBtn: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#d1d5db', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', fontWeight: 800, fontSize: '0.72rem' },
+  textButton: { justifySelf: 'end', background: 'transparent', border: 0, color: '#f59e0b', cursor: 'pointer', fontWeight: 900 },
+  submitBtn: { background: '#f59e0b', color: '#080808', border: 0, borderRadius: 12, padding: '13px 15px', cursor: 'pointer', fontWeight: 950, fontSize: '0.98rem' },
+  outlineBtn: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#d1d5db', borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontWeight: 850 },
+  divider: { display: 'flex', alignItems: 'center', gap: 10, color: '#6b7280', fontSize: '0.78rem' },
+  googleBtn: { background: '#151a21', border: '1px solid rgba(255,255,255,0.1)', color: '#f9fafb', borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontWeight: 850, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  adminBtn: { background: 'rgba(245,158,11,0.09)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b', borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontWeight: 850 },
+  roleGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  roleBtn: { background: '#151a21', border: '1px solid rgba(255,255,255,0.1)', color: '#f9fafb', borderRadius: 14, padding: 13, cursor: 'pointer', textAlign: 'left', display: 'grid', gap: 4 },
+  roleActive: { background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.55)' },
+  twoFields: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  inputHintDanger: { color: '#fca5a5', margin: '3px 0 0', fontSize: '0.74rem' },
+  strengthWrap: { display: 'grid', gap: 7, marginTop: 8 },
+  strengthBars: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 },
+  strengthMeta: { display: 'flex', justifyContent: 'space-between', color: '#9ca3af', fontSize: '0.75rem' },
+  checks: { display: 'flex', gap: 5, flexWrap: 'wrap' },
+  check: { borderRadius: 999, padding: '4px 8px', fontSize: '0.68rem', fontWeight: 900, border: '1px solid' },
+  checkOk: { background: 'rgba(34,197,94,0.1)', color: '#86efac', borderColor: 'rgba(34,197,94,0.25)' },
+  checkBad: { background: 'rgba(239,68,68,0.08)', color: '#fca5a5', borderColor: 'rgba(239,68,68,0.18)' },
+  footer: { width: 'min(1180px, calc(100% - 36px))', margin: '0 auto', padding: '22px 0 34px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 14, flexWrap: 'wrap', color: '#9ca3af', position: 'relative', zIndex: 1 },
+};
